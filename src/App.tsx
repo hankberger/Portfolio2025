@@ -16,6 +16,7 @@ function App() {
     // --- renderer / scene / camera ---
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x202025);
+    let mixer: THREE.AnimationMixer | null = null;
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -82,6 +83,24 @@ function App() {
             }
           }
         });
+
+        if (gltf.animations && gltf.animations.length) {
+          mixer = new THREE.AnimationMixer(gltf.scene);
+          gltf.animations.forEach((clip) => {
+            const action = mixer!.clipAction(clip);
+            action.clampWhenFinished = true;
+            action.loop = THREE.LoopRepeat; // or THREE.LoopOnce
+            action.play();
+          });
+          console.log(
+            "🎬 Playing clips:",
+            gltf.animations.map((c) => `${c.name} (${c.duration.toFixed(2)}s)`)
+          );
+        } else {
+          console.warn(
+            "⚠️ No glTF animation clips found. The model will be static."
+          );
+        }
 
         // Center at origin and auto-scale so longest side ~ 1 unit
         const box = new THREE.Box3().setFromObject(root);
@@ -178,11 +197,13 @@ function App() {
 
     // ---- animation ----
     const clock = new THREE.Clock();
+
     let isAnimating = false;
 
     const animate = () => {
-      const t = clock.getElapsedTime();
-      ditherMaterial.uniforms.time.value = t;
+      const delta = clock.getDelta();
+      ditherMaterial.uniforms.time.value = delta;
+      if (mixer) mixer.update(delta);
 
       controls.update();
 
