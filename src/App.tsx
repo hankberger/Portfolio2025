@@ -2,21 +2,17 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import "./App.css";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-
-// If fish1.glb is under src/assets/, this resolves correctly in Vite:
-const MODEL_URL = new URL("/fish1.glb", import.meta.url).href;
-// If you instead put it in public/models/, use: const MODEL_URL = "/models/fish1.glb";
+import Fish from "./classes/Fish";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 function App() {
   const mountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // --- renderer / scene / camera ---
+    // ---------------------------- Scene / Camera / Renderer ----------------------------
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x202025);
-    let mixer: THREE.AnimationMixer | null = null;
+    scene.background = new THREE.Color(0x101015);
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -35,14 +31,13 @@ function App() {
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
-    // ---- render target (where we render the normal scene) ----
     const renderTarget = new THREE.WebGLRenderTarget(
       window.innerWidth,
       window.innerHeight,
       { depthBuffer: true }
     );
 
-    // --- lights ---
+    // ---------------------------- Lights / Helpers ----------------------------
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
     hemiLight.position.set(0, 2, 0);
     scene.add(hemiLight);
@@ -51,95 +46,16 @@ function App() {
     dirLight.position.set(3, 5, 4);
     scene.add(dirLight);
 
-    // --- helpers (optional but great for debugging size/origin) ---
-    scene.add(new THREE.AxesHelper(0.5));
+    // scene.add(new THREE.AxesHelper(0.5));
     const grid = new THREE.GridHelper(10, 10);
-    (grid.material as THREE.Material).opacity = 0.25;
+    (grid.material as THREE.Material).opacity = 0.2;
     (grid.material as THREE.Material).transparent = true;
     grid.position.y = -0.001;
     scene.add(grid);
 
-    // ---- load GLB & make it visible no matter what ----
-    const loader = new GLTFLoader();
-    loader.load(
-      MODEL_URL,
-      (gltf) => {
-        const root = gltf.scene;
-
-        // Ensure renderable, disable frustum culling, double-sided while debugging
-        root.traverse((o: any) => {
-          if (o.isMesh) {
-            o.frustumCulled = false;
-            o.castShadow = o.receiveShadow = true;
-            if (o.material) {
-              if (Array.isArray(o.material))
-                o.material.forEach(
-                  (m: THREE.Material) => (m.side = THREE.DoubleSide)
-                );
-              else (o.material as THREE.Material).side = THREE.DoubleSide;
-            }
-            if (o.scale.x === 0 || o.scale.y === 0 || o.scale.z === 0) {
-              o.scale.setScalar(1);
-            }
-          }
-        });
-
-        if (gltf.animations && gltf.animations.length) {
-          mixer = new THREE.AnimationMixer(gltf.scene);
-          gltf.animations.forEach((clip) => {
-            const action = mixer!.clipAction(clip);
-            action.clampWhenFinished = true;
-            action.loop = THREE.LoopRepeat; // or THREE.LoopOnce
-            action.play();
-          });
-          console.log(
-            "🎬 Playing clips:",
-            gltf.animations.map((c) => `${c.name} (${c.duration.toFixed(2)}s)`)
-          );
-        } else {
-          console.warn(
-            "⚠️ No glTF animation clips found. The model will be static."
-          );
-        }
-
-        // Center at origin and auto-scale so longest side ~ 1 unit
-        const box = new THREE.Box3().setFromObject(root);
-        const size = new THREE.Vector3();
-        const center = new THREE.Vector3();
-        box.getSize(size);
-        box.getCenter(center);
-
-        root.position.sub(center); // center it at (0,0,0)
-
-        const longest = Math.max(size.x, size.y, size.z) || 1;
-        const targetSize = 1; // 1 meter-ish
-        const scale = targetSize / longest;
-        root.scale.setScalar(scale);
-
-        scene.add(root);
-
-        // Fit camera nicely to object
-        fitCameraToObject(camera, root, controls);
-
-        // kick the loop once model arrives
-        if (!isAnimating) {
-          isAnimating = true;
-          animate();
-        }
-      },
-      (xhr) => {
-        // progress (optional)
-        // console.log(`${((xhr.loaded / xhr.total) * 100).toFixed(0)}%`);
-      },
-      (err) => {
-        console.error("GLB load error", MODEL_URL, err);
-      }
-    );
-
-    // ---- full-screen quad scene for dithering ----
+    // ---------------------------- Post (Dither) ----------------------------
     const fsQuadScene = new THREE.Scene();
     const fsCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
     const ditherMaterial = new THREE.ShaderMaterial({
       uniforms: {
         tDiffuse: { value: renderTarget.texture },
@@ -179,14 +95,99 @@ function App() {
         }
       `,
     });
-
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), ditherMaterial);
     fsQuadScene.add(quad);
 
-    // ---- resize handler ----
+    let mixer: THREE.AnimationMixer | null = null;
+    const fishes: THREE.Object3D[] = [];
+
+    const loader = new GLTFLoader();
+    loader.load(
+      "./fish3.glb",
+      (gltf) => {
+        const base = gltf.scene;
+        scene.add(base);
+        mixer = new THREE.AnimationMixer(base);
+
+        base.traverse((o: any) => {
+          if (o.isMesh) {
+            o.frustumCulled = false;
+            o.castShadow = o.receiveShadow = true;
+            if (o.material) {
+              if (Array.isArray(o.material))
+                o.material.forEach(
+                  (m: THREE.Material) => (m.side = THREE.DoubleSide)
+                );
+              else (o.material as THREE.Material).side = THREE.DoubleSide;
+            }
+          }
+        });
+
+        fishes.push(base);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          const action = mixer.clipAction(gltf.animations[0]);
+          action.play();
+        }
+      },
+      undefined,
+      (err) => console.error("GLB load error", "./fish3.glb", err)
+    );
+    // ---------------------------- Update Loop ----------------------------
+    const clock = new THREE.Clock();
+    const target = new THREE.Vector3(0, 2, 0);
+
+    const sphereGeo = new THREE.SphereGeometry(1, 32, 16);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const sphereMesh = new THREE.Mesh(sphereGeo, material);
+
+    sphereMesh.position.copy(target);
+    scene.add(sphereMesh);
+
+    const animate = () => {
+      const delta = clock.getDelta();
+      ditherMaterial.uniforms.time.value += delta;
+
+      const velocity = delta * 1.5;
+
+      if (mixer) mixer.update(velocity);
+
+      for (const fish of fishes) {
+        const world = new THREE.Vector3();
+        const forward = fish.getWorldDirection(world);
+        forward.normalize();
+        forward.multiplyScalar(-0.01);
+        fish.position.add(forward);
+
+        const currentQuat = fish.quaternion.clone();
+        const targetQuat = new THREE.Quaternion();
+        targetQuat.setFromRotationMatrix(
+          new THREE.Matrix4().lookAt(
+            fish.position, // from
+            target.clone().normalize(), // to (direction)
+            fish.up // up vector
+          )
+        );
+
+        fish.quaternion.slerp(targetQuat, 0.001);
+      }
+
+      controls.update();
+
+      renderer.setRenderTarget(renderTarget);
+      renderer.clear();
+      renderer.render(scene, camera);
+      renderer.setRenderTarget(null);
+      renderer.render(fsQuadScene, fsCamera);
+
+      requestAnimationFrame(animate);
+    };
+    animate();
+
+    // ---------------------------- Resize ----------------------------
     const handleResize = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
+      const w = window.innerWidth,
+        h = window.innerHeight;
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -195,63 +196,7 @@ function App() {
     };
     window.addEventListener("resize", handleResize);
 
-    // ---- animation ----
-    const clock = new THREE.Clock();
-
-    let isAnimating = false;
-
-    const animate = () => {
-      const delta = clock.getDelta();
-      ditherMaterial.uniforms.time.value = delta;
-      if (mixer) mixer.update(delta);
-
-      controls.update();
-
-      // 1) render 3D scene to target
-      renderer.setRenderTarget(renderTarget);
-      renderer.clear();
-      renderer.render(scene, camera);
-      renderer.setRenderTarget(null);
-
-      // 2) render full-screen quad with dithering
-      renderer.render(fsQuadScene, fsCamera);
-
-      requestAnimationFrame(animate);
-    };
-    isAnimating = true;
-    animate();
-
-    // ---- utils ----
-    function fitCameraToObject(
-      cam: THREE.PerspectiveCamera,
-      object: THREE.Object3D,
-      ctrls?: OrbitControls,
-      offset = 1.25
-    ) {
-      const box = new THREE.Box3().setFromObject(object);
-      const size = new THREE.Vector3();
-      box.getSize(size);
-      const center = new THREE.Vector3();
-      box.getCenter(center);
-
-      const maxSize = Math.max(size.x, size.y, size.z);
-      const halfFov = THREE.MathUtils.degToRad(cam.fov * 0.5);
-      const dist = (maxSize * 0.5) / Math.tan(halfFov);
-
-      const dir = new THREE.Vector3()
-        .subVectors(cam.position, ctrls?.target || new THREE.Vector3())
-        .normalize();
-
-      cam.position.copy(center).addScaledVector(dir, dist * offset);
-      cam.near = Math.max(dist / 100, 0.01);
-      cam.far = dist * 100;
-      cam.updateProjectionMatrix();
-
-      ctrls?.target.copy(center);
-      ctrls?.update();
-    }
-
-    // ---- cleanup ----
+    // ---------------------------- Cleanup ----------------------------
     return () => {
       window.removeEventListener("resize", handleResize);
       renderTarget.dispose();
