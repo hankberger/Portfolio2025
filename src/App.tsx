@@ -47,7 +47,7 @@ function App() {
     scene.add(dirLight);
 
     // scene.add(new THREE.AxesHelper(0.5));
-    const grid = new THREE.GridHelper(10, 10);
+    const grid = new THREE.GridHelper(100, 100);
     (grid.material as THREE.Material).opacity = 0.2;
     (grid.material as THREE.Material).transparent = true;
     grid.position.y = -0.001;
@@ -144,32 +144,95 @@ function App() {
     sphereMesh.position.copy(target);
     scene.add(sphereMesh);
 
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    // a math plane: y = 0 (horizontal ground)
+    const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+    // sphere visualization
+    const visualGeo = new THREE.SphereGeometry(0.1, 16, 12);
+    const visualMat = new THREE.MeshBasicMaterial({ color: 0x55aaff });
+    const sphere = new THREE.Mesh(visualGeo, visualMat);
+    sphere.visible = false; // hide until we have a hit
+    scene.add(sphere);
+
+    // vector to store target position
+    const mouseTarget = new THREE.Vector3();
+
+    function ndcFromEvent(e: MouseEvent) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      ndcFromEvent(e);
+      raycaster.setFromCamera(mouse, camera);
+
+      if (raycaster.ray.intersectPlane(groundPlane, mouseTarget)) {
+        sphere.position.copy(mouseTarget);
+        sphere.visible = true;
+      } else {
+        sphere.visible = false;
+      }
+    }
+
+    renderer.domElement.addEventListener("mousemove", onMouseMove);
+
+    // --- temps to avoid GC each frame ---
+    const tmpDir = new THREE.Vector3();
+    const tmpUp = new THREE.Vector3();
+    const tmpLook = new THREE.Vector3();
+    const targetQuat = new THREE.Quaternion();
+    const tmpMat4 = new THREE.Matrix4();
+
+    const MAX_SPEED = 5.0; // units per second
+    const ARRIVE_RADIUS = 10; // start slowing within this distance
+    const TURN_SMOOTH = 0.005; // 0..1, higher = faster turning
+
     const animate = () => {
-      const delta = clock.getDelta();
-      ditherMaterial.uniforms.time.value += delta;
+      const dt = Math.min(clock.getDelta(), 0.033);
+      ditherMaterial.uniforms.time.value += dt;
 
-      const velocity = delta * 1.5;
+      // only steer when we have a valid target
+      const haveTarget = sphere.visible; // set true when ray hits plane
+      if (haveTarget) {
+        for (const fish of fishes) {
+          // desired direction: mouseTarget - fish.position
+          tmpDir.copy(mouseTarget).sub(fish.position);
+          const dist = tmpDir.length();
 
-      if (mixer) mixer.update(velocity);
+          if (dist > 1e-3) {
+            tmpDir.multiplyScalar(1 / dist); // normalize
 
-      for (const fish of fishes) {
-        const world = new THREE.Vector3();
-        const forward = fish.getWorldDirection(world);
-        forward.normalize();
-        forward.multiplyScalar(-0.01);
-        fish.position.add(forward);
+            // arrive: slow down as we get close
+            const speedFactor =
+              dist < ARRIVE_RADIUS ? dist / ARRIVE_RADIUS : 1.0;
+            const step = MAX_SPEED * speedFactor * dt;
 
-        const currentQuat = fish.quaternion.clone();
-        const targetQuat = new THREE.Quaternion();
-        targetQuat.setFromRotationMatrix(
-          new THREE.Matrix4().lookAt(
-            fish.position, // from
-            target.clone().normalize(), // to (direction)
-            fish.up // up vector
-          )
-        );
+            if (mixer) mixer.update(Math.max(step, 0.005));
 
-        fish.quaternion.slerp(targetQuat, 0.001);
+            // move toward target
+            const forward = new THREE.Vector3(0, 0, 0);
+            const movementVec = fish.getWorldDirection(forward);
+            movementVec.multiplyScalar(-step);
+            fish.position.add(movementVec);
+
+            // face movement direction (use lookAt with a POINT, not a direction)
+            tmpLook.copy(fish.position).add(tmpDir); // a point ahead along desired dir
+            // ensure a stable up (use fish.up or world up)
+            tmpUp.copy(
+              fish.up.lengthSq() ? fish.up : new THREE.Vector3(0, 1, 0)
+            );
+
+            tmpMat4.lookAt(fish.position, tmpLook, tmpUp);
+            targetQuat.setFromRotationMatrix(tmpMat4);
+
+            // smooth rotation toward target
+            fish.quaternion.slerp(targetQuat, TURN_SMOOTH);
+          }
+        }
       }
 
       controls.update();
