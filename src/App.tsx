@@ -5,6 +5,7 @@ import "./App.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Fish from "./classes/Fish";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import MouseShader from "./shaders/MouseShader";
 
 function App() {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -12,7 +13,7 @@ function App() {
   useEffect(() => {
     // ---------------------------- Scene / Camera / Renderer ----------------------------
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x101015);
+    scene.background = new THREE.Color(0x0052a3);
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -38,7 +39,7 @@ function App() {
     );
 
     // ---------------------------- Lights / Helpers ----------------------------
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+    const hemiLight = new THREE.HemisphereLight(0xbcd7ff, 0x223355, 1.0);
     hemiLight.position.set(0, 2, 0);
     scene.add(hemiLight);
 
@@ -47,11 +48,11 @@ function App() {
     scene.add(dirLight);
 
     // scene.add(new THREE.AxesHelper(0.5));
-    const grid = new THREE.GridHelper(100, 100);
-    (grid.material as THREE.Material).opacity = 0.2;
-    (grid.material as THREE.Material).transparent = true;
-    grid.position.y = -0.001;
-    scene.add(grid);
+    // const grid = new THREE.GridHelper(100, 100);
+    // (grid.material as THREE.Material).opacity = 0.2;
+    // (grid.material as THREE.Material).transparent = true;
+    // grid.position.y = -0.001;
+    // scene.add(grid);
 
     // ---------------------------- Post (Dither) ----------------------------
     const fsQuadScene = new THREE.Scene();
@@ -64,37 +65,51 @@ function App() {
           value: new THREE.Vector2(window.innerWidth, window.innerHeight),
         },
         time: { value: 0 },
+        tint: { value: new THREE.Color(0xffffff) }, // BLUE
+        tintStrength: { value: 1.0 }, // 0..1
       },
       vertexShader: /* glsl */ `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = vec4(position, 1.0);
-        }
-      `,
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = vec4(position, 1.0);
+    }
+  `,
       fragmentShader: /* glsl */ `
-        uniform sampler2D tDiffuse;
-        uniform float levels;
-        uniform vec2 resolution;
-        uniform float time;
-        varying vec2 vUv;
+    uniform sampler2D tDiffuse;
+    uniform float levels;
+    uniform vec2 resolution;
+    uniform float time;
+    uniform vec3  tint;
+    uniform float tintStrength;
+    varying vec2 vUv;
 
-        float bayerDither(vec2 pos) {
-          int x = int(mod(pos.x, 4.0));
-          int y = int(mod(pos.y, 4.0));
-          int index = x + y * 4;
-          const int bayer[16] = int[16](0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5);
-          return float(bayer[index]) / 16.0;
-        }
+    float bayerDither(vec2 pos) {
+      int x = int(mod(pos.x, 4.0));
+      int y = int(mod(pos.y, 4.0));
+      int index = x + y * 4;
+      const int bayer[16] = int[16](0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5);
+      return float(bayer[index]) / 16.0;
+    }
 
-        void main() {
-          vec4 color = texture2D(tDiffuse, vUv);
-          float d = bayerDither(gl_FragCoord.xy + time * 30.0);
-          vec3 qColor = floor(color.rgb * levels + d * 2.0) / levels;
-          gl_FragColor = vec4(qColor, 1.0);
-        }
-      `,
+    void main() {
+      vec4 color = texture2D(tDiffuse, vUv);
+      float d = bayerDither(gl_FragCoord.xy + time * 30.0);
+
+      // quantize
+      vec3 qColor = floor(color.rgb * levels + d * 2.0) / levels;
+
+      // safer than pure multiply: mix towards a tinted version
+      vec3 tinted = qColor * tint;
+      qColor = mix(qColor, tinted, clamp(tintStrength, 0.0, 1.0));
+
+      // keep energy reasonable
+      qColor = clamp(qColor, 0.0, 1.0);
+      gl_FragColor = vec4(qColor, 1.0);
+    }
+  `,
     });
+
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), ditherMaterial);
     fsQuadScene.add(quad);
 
@@ -142,7 +157,7 @@ function App() {
     const sphereMesh = new THREE.Mesh(sphereGeo, material);
 
     sphereMesh.position.copy(target);
-    scene.add(sphereMesh);
+    //scene.add(sphereMesh);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -155,7 +170,7 @@ function App() {
     const visualMat = new THREE.MeshBasicMaterial({ color: 0x55aaff });
     const sphere = new THREE.Mesh(visualGeo, visualMat);
     sphere.visible = false; // hide until we have a hit
-    scene.add(sphere);
+    //scene.add(sphere);
 
     // vector to store target position
     const mouseTarget = new THREE.Vector3();
@@ -272,7 +287,11 @@ function App() {
     };
   }, []);
 
-  return <div ref={mountRef} />;
+  return (
+    <>
+      <div ref={mountRef} />
+    </>
+  );
 }
 
 export default App;
