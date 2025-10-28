@@ -4,6 +4,7 @@ import * as THREE from "three";
 import "./App.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Fish from "./classes/Fish";
+import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import MouseShader from "./shaders/MouseShader";
 
@@ -116,35 +117,67 @@ function App() {
     let mixer: THREE.AnimationMixer | null = null;
     let player: THREE.Object3D;
     const fishes: THREE.Object3D[] = [];
+    const mixers: THREE.AnimationMixer[] = [];
 
     const loader = new GLTFLoader();
     loader.load(
       "./fish3.glb",
       (gltf) => {
-        const base = gltf.scene;
-        scene.add(base);
-        mixer = new THREE.AnimationMixer(base);
+        const template = gltf.scene;
+        const clip = gltf.animations?.[0];
 
-        base.traverse((o: any) => {
-          if (o.isMesh) {
-            o.frustumCulled = false;
-            o.castShadow = o.receiveShadow = true;
-            if (o.material) {
-              if (Array.isArray(o.material))
-                o.material.forEach(
-                  (m: THREE.Material) => (m.side = THREE.DoubleSide)
-                );
-              else (o.material as THREE.Material).side = THREE.DoubleSide;
+        // We'll create 15 clones from the template
+        const COUNT = 15;
+
+        for (let i = 0; i < COUNT; i++) {
+          // Properly clone skinned meshes/skeletons
+          const fish = clone(template) as THREE.Object3D;
+
+          // Match your material + culling tweaks
+          fish.traverse((o: any) => {
+            if (o.isMesh) {
+              o.frustumCulled = false;
+              o.castShadow = o.receiveShadow = true;
+              if (o.material) {
+                if (Array.isArray(o.material)) {
+                  o.material.forEach(
+                    (m: THREE.Material) => (m.side = THREE.DoubleSide)
+                  );
+                } else {
+                  (o.material as THREE.Material).side = THREE.DoubleSide;
+                }
+              }
             }
+          });
+
+          // Randomize position/rotation/scale a bit
+          fish.position.set(
+            THREE.MathUtils.randFloatSpread(10), // x in [-5,5]
+            THREE.MathUtils.randFloat(-5, 5), // y
+            THREE.MathUtils.randFloatSpread(10) // z in [-5,5]
+          );
+          fish.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
+          const s = THREE.MathUtils.randFloat(0.4, 1);
+          fish.scale.setScalar(s);
+
+          // Push to array and add to scene
+          fishes.push(fish);
+          scene.add(fish);
+
+          // Give each fish its own mixer & play the first animation (if present)
+          if (clip) {
+            const m = new THREE.AnimationMixer(fish);
+            const action = m.clipAction(clip);
+            action.play();
+            mixers.push(m);
           }
-        });
-
-        player = base;
-
-        if (gltf.animations && gltf.animations.length > 0) {
-          const action = mixer.clipAction(gltf.animations[0]);
-          action.play();
         }
+
+        // Keep "player" pointing at the first fish (if you rely on it elsewhere)
+        player = fishes[0];
+
+        // Also keep your original 'mixer' variable referencing the first one
+        mixer = mixers.length > 0 ? mixers[0] : null;
       },
       undefined,
       (err) => console.error("GLB load error", "./fish3.glb", err)
@@ -153,12 +186,12 @@ function App() {
     const clock = new THREE.Clock();
     const target = new THREE.Vector3(0, 2, 0);
 
-    const sphereGeo = new THREE.SphereGeometry(1, 32, 16);
+    const sphereGeo = new THREE.SphereGeometry(0.1, 32, 16);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const sphereMesh = new THREE.Mesh(sphereGeo, material);
 
     sphereMesh.position.copy(target);
-    //scene.add(sphereMesh);
+    scene.add(sphereMesh);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -196,56 +229,96 @@ function App() {
 
     renderer.domElement.addEventListener("mousemove", onMouseMove);
 
-    // --- temps to avoid GC each frame ---
-    const tmpDir = new THREE.Vector3();
-    const tmpUp = new THREE.Vector3();
-    const tmpLook = new THREE.Vector3();
-    const targetQuat = new THREE.Quaternion();
-    const tmpMat4 = new THREE.Matrix4();
+    // ---------- shared temps (no GC) ----------
+    const v1 = new THREE.Vector3();
+    const v2 = new THREE.Vector3();
+    const v3 = new THREE.Vector3();
+    const up = new THREE.Vector3();
+    const qTarget = new THREE.Quaternion();
+    const m4 = new THREE.Matrix4();
 
-    const MAX_SPEED = 6.0; // units per second
-    const ARRIVE_RADIUS = 8; // start slowing within this distance
-    const TURN_SMOOTH = 0.006; // 0..1, higher = faster turning
+    // ---------- tuning ----------
+    const TURN_LEADER = 0.006; // slerp factor per frame
+    const SPEED_LEADER = 6.0; // units/sec (arrive with slowdown)
+    const ARRIVE_RADIUS = 8.0;
 
+    const TURN_FOLLOW = 0.002; // slerp factor per frame
+    const SPEED_FOLLOW = 2; // units/sec (constant)
+
+    const phase: number[] = fishes.map(() => Math.random() * Math.PI * 10);
+    const wobbleAmp = 10; // units
+    const wobbleHz = 10; // cycles/sec
+
+    // ---------- fixed target for followers ----------
+    const FIXED_TARGET = new THREE.Vector3(0, 0, 0); // <— change as needed
+
+    // ---------- animate ----------
     const animate = () => {
       const dt = Math.min(clock.getDelta(), 0.033);
       ditherMaterial.uniforms.time.value += dt;
 
-      // only steer when we have a valid target
-      const haveTarget = sphere.visible; // set true when ray hits plane
-      if (haveTarget) {
-        // desired direction: mouseTarget - fish.position
-        tmpDir.copy(mouseTarget).sub(player.position);
-        const dist = tmpDir.length();
+      // ---------------- Leader (index 0) -> mouseTarget ----------------
+      if (sphere.visible) {
+        // direction to mouse target
+        v1.copy(mouseTarget).sub(player.position);
+        const dist = v1.length();
 
         if (dist > 1e-3) {
-          tmpDir.multiplyScalar(1 / dist); // normalize
+          v1.multiplyScalar(1 / dist); // normalize
 
-          // arrive: slow down as we get close
+          // arrive: slow as we approach
           const speedFactor = dist < ARRIVE_RADIUS ? dist / ARRIVE_RADIUS : 1.0;
-          const step = MAX_SPEED * speedFactor * dt;
+          const step = SPEED_LEADER * speedFactor * dt;
 
           if (mixer) mixer.update(Math.max(step, 0.005));
 
-          // move toward target
-          const forward = new THREE.Vector3(0, 0, 0);
-          const movementVec = player.getWorldDirection(forward);
-          movementVec.multiplyScalar(-step);
-          player.position.add(movementVec);
+          // move forward along local -Z
+          v2.set(0, 0, -1)
+            .applyQuaternion(player.quaternion)
+            .multiplyScalar(step);
+          player.position.add(v2);
 
-          // face movement direction (use lookAt with a POINT, not a direction)
-          tmpLook.copy(player.position).add(tmpDir); // a point ahead along desired dir
-          // ensure a stable up (use fish.up or world up)
-          tmpUp.copy(
-            player.up.lengthSq() ? player.up : new THREE.Vector3(0, 1, 0)
-          );
-
-          tmpMat4.lookAt(player.position, tmpLook, tmpUp);
-          targetQuat.setFromRotationMatrix(tmpMat4);
-
-          // smooth rotation toward target
-          player.quaternion.slerp(targetQuat, TURN_SMOOTH);
+          // face desired direction (lookAt -> quat -> slerp)
+          v3.copy(player.position).add(v1); // point ahead along desired dir
+          up.copy(player.up.lengthSq() ? player.up : up.set(0, 1, 0));
+          m4.lookAt(player.position, v3, up);
+          qTarget.setFromRotationMatrix(m4);
+          player.quaternion.slerp(qTarget, TURN_LEADER);
+        } else {
+          if (mixer) mixer.update(dt);
         }
+      } else {
+        if (mixer) mixer.update(dt);
+      }
+
+      // ---------------- Followers (index 1..N) -> FIXED_TARGET ----------------
+      for (let i = 1; i < fishes.length; i++) {
+        const f = fishes[i];
+        const mix = mixers[i];
+        if (mix) mix.update(dt);
+
+        // direction to fixed target
+        v1.copy(FIXED_TARGET).sub(f.position);
+
+        if (v1.lengthSq() > 1e-8) {
+          v1.normalize();
+
+          // build orientation that looks at target
+          v2.copy(f.position).add(v1);
+          up.copy(f.up.lengthSq() ? f.up : up.set(0, 1, 0));
+          m4.lookAt(f.position, v2, up);
+          qTarget.setFromRotationMatrix(m4);
+
+          // slerp toward target heading
+          f.quaternion.slerp(qTarget, TURN_FOLLOW);
+
+          v1.y += Math.sin(dt * 2 * Math.PI * wobbleHz + phase[i]) * wobbleAmp;
+          v1.normalize();
+        }
+
+        // forward movement along -Z
+        v3.set(0, 0, -1).applyQuaternion(f.quaternion);
+        f.position.addScaledVector(v3, SPEED_FOLLOW * dt);
       }
 
       controls.update();
