@@ -114,6 +114,7 @@ function App() {
     fsQuadScene.add(quad);
 
     let mixer: THREE.AnimationMixer | null = null;
+    let player: THREE.Object3D;
     const fishes: THREE.Object3D[] = [];
 
     const loader = new GLTFLoader();
@@ -138,7 +139,7 @@ function App() {
           }
         });
 
-        fishes.push(base);
+        player = base;
 
         if (gltf.animations && gltf.animations.length > 0) {
           const action = mixer.clipAction(gltf.animations[0]);
@@ -202,9 +203,9 @@ function App() {
     const targetQuat = new THREE.Quaternion();
     const tmpMat4 = new THREE.Matrix4();
 
-    const MAX_SPEED = 5.0; // units per second
-    const ARRIVE_RADIUS = 10; // start slowing within this distance
-    const TURN_SMOOTH = 0.005; // 0..1, higher = faster turning
+    const MAX_SPEED = 6.0; // units per second
+    const ARRIVE_RADIUS = 8; // start slowing within this distance
+    const TURN_SMOOTH = 0.006; // 0..1, higher = faster turning
 
     const animate = () => {
       const dt = Math.min(clock.getDelta(), 0.033);
@@ -213,40 +214,37 @@ function App() {
       // only steer when we have a valid target
       const haveTarget = sphere.visible; // set true when ray hits plane
       if (haveTarget) {
-        for (const fish of fishes) {
-          // desired direction: mouseTarget - fish.position
-          tmpDir.copy(mouseTarget).sub(fish.position);
-          const dist = tmpDir.length();
+        // desired direction: mouseTarget - fish.position
+        tmpDir.copy(mouseTarget).sub(player.position);
+        const dist = tmpDir.length();
 
-          if (dist > 1e-3) {
-            tmpDir.multiplyScalar(1 / dist); // normalize
+        if (dist > 1e-3) {
+          tmpDir.multiplyScalar(1 / dist); // normalize
 
-            // arrive: slow down as we get close
-            const speedFactor =
-              dist < ARRIVE_RADIUS ? dist / ARRIVE_RADIUS : 1.0;
-            const step = MAX_SPEED * speedFactor * dt;
+          // arrive: slow down as we get close
+          const speedFactor = dist < ARRIVE_RADIUS ? dist / ARRIVE_RADIUS : 1.0;
+          const step = MAX_SPEED * speedFactor * dt;
 
-            if (mixer) mixer.update(Math.max(step, 0.005));
+          if (mixer) mixer.update(Math.max(step, 0.005));
 
-            // move toward target
-            const forward = new THREE.Vector3(0, 0, 0);
-            const movementVec = fish.getWorldDirection(forward);
-            movementVec.multiplyScalar(-step);
-            fish.position.add(movementVec);
+          // move toward target
+          const forward = new THREE.Vector3(0, 0, 0);
+          const movementVec = player.getWorldDirection(forward);
+          movementVec.multiplyScalar(-step);
+          player.position.add(movementVec);
 
-            // face movement direction (use lookAt with a POINT, not a direction)
-            tmpLook.copy(fish.position).add(tmpDir); // a point ahead along desired dir
-            // ensure a stable up (use fish.up or world up)
-            tmpUp.copy(
-              fish.up.lengthSq() ? fish.up : new THREE.Vector3(0, 1, 0)
-            );
+          // face movement direction (use lookAt with a POINT, not a direction)
+          tmpLook.copy(player.position).add(tmpDir); // a point ahead along desired dir
+          // ensure a stable up (use fish.up or world up)
+          tmpUp.copy(
+            player.up.lengthSq() ? player.up : new THREE.Vector3(0, 1, 0)
+          );
 
-            tmpMat4.lookAt(fish.position, tmpLook, tmpUp);
-            targetQuat.setFromRotationMatrix(tmpMat4);
+          tmpMat4.lookAt(player.position, tmpLook, tmpUp);
+          targetQuat.setFromRotationMatrix(tmpMat4);
 
-            // smooth rotation toward target
-            fish.quaternion.slerp(targetQuat, TURN_SMOOTH);
-          }
+          // smooth rotation toward target
+          player.quaternion.slerp(targetQuat, TURN_SMOOTH);
         }
       }
 
