@@ -228,6 +228,30 @@ function App() {
 
         // Keep "player" pointing at the first fish (if you rely on it elsewhere)
         player = fishes[0];
+        if (player) {
+          const playerColor = new THREE.Color(0xff0026);
+          player.traverse((o: any) => {
+            if (o.isMesh && o.material) {
+              if (Array.isArray(o.material)) {
+                o.material = o.material.map((m: THREE.Material) => {
+                  const cloneMat = m.clone() as THREE.Material & {
+                    color?: THREE.Color;
+                  };
+                  if ((cloneMat as any).color) {
+                    (cloneMat as any).color.set(playerColor);
+                  }
+                  return cloneMat;
+                });
+              } else {
+                const mat = o.material.clone() as THREE.Material & {
+                  color?: THREE.Color;
+                };
+                if (mat.color) mat.color.set(playerColor);
+                o.material = mat;
+              }
+            }
+          });
+        }
 
         // Also keep your original 'mixer' variable referencing the first one
         mixer = mixers.length > 0 ? mixers[0] : null;
@@ -244,7 +268,7 @@ function App() {
     const sphereMesh = new THREE.Mesh(sphereGeo, material);
 
     sphereMesh.position.copy(target);
-    scene.add(sphereMesh);
+    //scene.add(sphereMesh);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
