@@ -133,7 +133,12 @@ function App() {
     const SPEED_SMOOTH = 3.0;
     const MIN_FOLLOW_SPEED = 0.9;
     const MAX_FOLLOW_SPEED = 3.2;
+    const MAX_AVOID_SPEED = 12.0;
     const WANDER_STRENGTH = 0.55;
+    const PLAYER_AVOID_RADIUS = 12;
+    const PLAYER_AVOID_STRENGTH = 30;
+    const PLAYER_AVOID_TURN_MULT = 5.5;
+    const PLAYER_AVOID_SPEED_LERP_MULT = 12.0;
 
     const setRandomFollowerOffset = (target: THREE.Vector3) => {
       target.set(
@@ -146,9 +151,11 @@ function App() {
         target.set(1, 0, 0);
       }
 
-      target.normalize().multiplyScalar(
-        THREE.MathUtils.randFloat(OFFSET_RADIUS_MIN, OFFSET_RADIUS_MAX)
-      );
+      target
+        .normalize()
+        .multiplyScalar(
+          THREE.MathUtils.randFloat(OFFSET_RADIUS_MIN, OFFSET_RADIUS_MAX)
+        );
       return target;
     };
 
@@ -197,7 +204,9 @@ function App() {
           fishes.push(fish);
           scene.add(fish);
 
-          followerSpeeds.push(THREE.MathUtils.randFloat(MIN_FOLLOW_SPEED, MAX_FOLLOW_SPEED));
+          followerSpeeds.push(
+            THREE.MathUtils.randFloat(MIN_FOLLOW_SPEED, MAX_FOLLOW_SPEED)
+          );
           followerOffsets.push(setRandomFollowerOffset(new THREE.Vector3()));
           followerOffsetTargets.push(
             setRandomFollowerOffset(new THREE.Vector3())
@@ -345,8 +354,10 @@ function App() {
         followerTimers[i] -= dt;
         if (followerTimers[i] <= 0) {
           setRandomFollowerOffset(followerOffsetTargets[i]);
-          followerTimers[i] =
-            THREE.MathUtils.randFloat(OFFSET_TIME_MIN, OFFSET_TIME_MAX);
+          followerTimers[i] = THREE.MathUtils.randFloat(
+            OFFSET_TIME_MIN,
+            OFFSET_TIME_MAX
+          );
         }
 
         followerOffsets[i].lerp(followerOffsetTargets[i], offsetLerp);
@@ -358,10 +369,31 @@ function App() {
           Math.sin(followerWanderPhase[i] * 1.3 - i)
         ).multiplyScalar(WANDER_STRENGTH);
 
+        let avoidanceFactor = 0;
         const targetPoint = v1
           .copy(FIXED_TARGET)
           .add(followerOffsets[i])
           .add(v2);
+
+        if (player) {
+          const toPlayer = v3.copy(f.position).sub(player.position);
+          const distToPlayer = toPlayer.length();
+          if (distToPlayer > 1e-5 && distToPlayer < PLAYER_AVOID_RADIUS) {
+            const falloff = 1 - distToPlayer / PLAYER_AVOID_RADIUS;
+            avoidanceFactor = THREE.MathUtils.clamp(
+              Math.pow(falloff, 2.2),
+              0,
+              1
+            );
+            const scaledAvoid =
+              PLAYER_AVOID_STRENGTH * avoidanceFactor * avoidanceFactor;
+            targetPoint.addScaledVector(
+              toPlayer.multiplyScalar(1 / distToPlayer),
+              scaledAvoid
+            );
+          }
+        }
+
         const toTarget = v3.copy(targetPoint).sub(f.position);
         const distance = toTarget.length();
 
@@ -371,15 +403,37 @@ function App() {
           up.copy(f.up.lengthSq() ? f.up : FOLLOW_UP);
           m4.lookAt(f.position, v2, up);
           qTarget.setFromRotationMatrix(m4);
-          f.quaternion.slerp(qTarget, TURN_FOLLOW);
+          const turnGain = THREE.MathUtils.lerp(
+            1,
+            PLAYER_AVOID_TURN_MULT,
+            avoidanceFactor
+          );
+          f.quaternion.slerp(qTarget, TURN_FOLLOW * turnGain);
         }
 
-        const desiredSpeed = THREE.MathUtils.lerp(
+        let desiredSpeed = THREE.MathUtils.lerp(
           MIN_FOLLOW_SPEED,
           MAX_FOLLOW_SPEED,
           THREE.MathUtils.clamp(distance / OFFSET_RADIUS_MAX, 0, 1)
         );
-        followerSpeeds[i] += (desiredSpeed - followerSpeeds[i]) * speedLerp;
+        if (avoidanceFactor > 0) {
+          const speedEase = 1 - Math.pow(1 - avoidanceFactor, 4);
+          desiredSpeed +=
+            (MAX_AVOID_SPEED - desiredSpeed) *
+            THREE.MathUtils.clamp(speedEase, 0, 1);
+        }
+
+        const dynamicSpeedLerp =
+          avoidanceFactor > 0
+            ? 1 -
+              Math.exp(
+                -SPEED_SMOOTH *
+                  dt *
+                  (1 + avoidanceFactor * PLAYER_AVOID_SPEED_LERP_MULT)
+              )
+            : speedLerp;
+        followerSpeeds[i] +=
+          (desiredSpeed - followerSpeeds[i]) * dynamicSpeedLerp;
 
         const forward = v2.set(0, 0, -1).applyQuaternion(f.quaternion);
         f.position.addScaledVector(forward, followerSpeeds[i] * dt);
