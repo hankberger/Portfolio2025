@@ -132,13 +132,13 @@ function App() {
     const OFFSET_SMOOTH = 1.8;
     const SPEED_SMOOTH = 3.0;
     const MIN_FOLLOW_SPEED = 0.9;
-    const MAX_FOLLOW_SPEED = 3.2;
-    const MAX_AVOID_SPEED = 12.0;
+    const MAX_FOLLOW_SPEED = 1.5;
+    const MAX_AVOID_SPEED = 10.0;
     const WANDER_STRENGTH = 0.55;
-    const PLAYER_AVOID_RADIUS = 12;
+    const PLAYER_AVOID_RADIUS = 10;
     const PLAYER_AVOID_STRENGTH = 30;
     const PLAYER_AVOID_TURN_MULT = 5.5;
-    const PLAYER_AVOID_SPEED_LERP_MULT = 12.0;
+    const PLAYER_AVOID_SPEED_LERP_MULT = 10.0;
 
     const setRandomFollowerOffset = (target: THREE.Vector3) => {
       target.set(
@@ -371,7 +371,6 @@ function App() {
       for (let i = 1; i < fishes.length; i++) {
         const f = fishes[i];
         const mix = mixers[i];
-        if (mix) mix.update(dt);
 
         if (followerSpeeds[i] === undefined) continue;
 
@@ -440,6 +439,7 @@ function App() {
           MAX_FOLLOW_SPEED,
           THREE.MathUtils.clamp(distance / OFFSET_RADIUS_MAX, 0, 1)
         );
+
         if (avoidanceFactor > 0) {
           const speedEase = 1 - Math.pow(1 - avoidanceFactor, 4);
           desiredSpeed +=
@@ -459,6 +459,7 @@ function App() {
         followerSpeeds[i] +=
           (desiredSpeed - followerSpeeds[i]) * dynamicSpeedLerp;
 
+        if (mix) mix.update(dynamicSpeedLerp * 0.33);
         const forward = v2.set(0, 0, -1).applyQuaternion(f.quaternion);
         f.position.addScaledVector(forward, followerSpeeds[i] * dt);
       }
