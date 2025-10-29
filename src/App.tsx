@@ -118,6 +118,39 @@ function App() {
     let player: THREE.Object3D;
     const fishes: THREE.Object3D[] = [];
     const mixers: THREE.AnimationMixer[] = [];
+    const followerSpeeds: number[] = [];
+    const followerOffsets: THREE.Vector3[] = [];
+    const followerOffsetTargets: THREE.Vector3[] = [];
+    const followerTimers: number[] = [];
+    const followerWanderPhase: number[] = [];
+    const followerWanderSpeed: number[] = [];
+
+    const OFFSET_RADIUS_MIN = 2.0;
+    const OFFSET_RADIUS_MAX = 6.0;
+    const OFFSET_TIME_MIN = 1.5;
+    const OFFSET_TIME_MAX = 3.5;
+    const OFFSET_SMOOTH = 1.8;
+    const SPEED_SMOOTH = 3.0;
+    const MIN_FOLLOW_SPEED = 0.9;
+    const MAX_FOLLOW_SPEED = 3.2;
+    const WANDER_STRENGTH = 0.55;
+
+    const setRandomFollowerOffset = (target: THREE.Vector3) => {
+      target.set(
+        THREE.MathUtils.randFloatSpread(2),
+        THREE.MathUtils.randFloatSpread(1),
+        THREE.MathUtils.randFloatSpread(2)
+      );
+
+      if (target.lengthSq() < 1e-4) {
+        target.set(1, 0, 0);
+      }
+
+      target.normalize().multiplyScalar(
+        THREE.MathUtils.randFloat(OFFSET_RADIUS_MIN, OFFSET_RADIUS_MAX)
+      );
+      return target;
+    };
 
     const loader = new GLTFLoader();
     loader.load(
@@ -163,6 +196,17 @@ function App() {
           // Push to array and add to scene
           fishes.push(fish);
           scene.add(fish);
+
+          followerSpeeds.push(THREE.MathUtils.randFloat(MIN_FOLLOW_SPEED, MAX_FOLLOW_SPEED));
+          followerOffsets.push(setRandomFollowerOffset(new THREE.Vector3()));
+          followerOffsetTargets.push(
+            setRandomFollowerOffset(new THREE.Vector3())
+          );
+          followerTimers.push(
+            THREE.MathUtils.randFloat(OFFSET_TIME_MIN, OFFSET_TIME_MAX)
+          );
+          followerWanderPhase.push(Math.random() * Math.PI * 2);
+          followerWanderSpeed.push(THREE.MathUtils.randFloat(0.6, 1.2));
 
           // Give each fish its own mixer & play the first animation (if present)
           if (clip) {
@@ -243,11 +287,7 @@ function App() {
     const ARRIVE_RADIUS = 8.0;
 
     const TURN_FOLLOW = 0.002; // slerp factor per frame
-    const SPEED_FOLLOW = 2; // units/sec (constant)
-
-    const phase: number[] = fishes.map(() => Math.random() * Math.PI * 10);
-    const wobbleAmp = 10; // units
-    const wobbleHz = 10; // cycles/sec
+    const FOLLOW_UP = new THREE.Vector3(0, 1, 0);
 
     // ---------- fixed target for followers ----------
     const FIXED_TARGET = new THREE.Vector3(0, 0, 0); // <— change as needed
@@ -292,33 +332,57 @@ function App() {
       }
 
       // ---------------- Followers (index 1..N) -> FIXED_TARGET ----------------
+      const offsetLerp = 1 - Math.exp(-OFFSET_SMOOTH * dt);
+      const speedLerp = 1 - Math.exp(-SPEED_SMOOTH * dt);
+
       for (let i = 1; i < fishes.length; i++) {
         const f = fishes[i];
         const mix = mixers[i];
         if (mix) mix.update(dt);
 
-        // direction to fixed target
-        v1.copy(FIXED_TARGET).sub(f.position);
+        if (followerSpeeds[i] === undefined) continue;
 
-        if (v1.lengthSq() > 1e-8) {
-          v1.normalize();
-
-          // build orientation that looks at target
-          v2.copy(f.position).add(v1);
-          up.copy(f.up.lengthSq() ? f.up : up.set(0, 1, 0));
-          m4.lookAt(f.position, v2, up);
-          qTarget.setFromRotationMatrix(m4);
-
-          // slerp toward target heading
-          f.quaternion.slerp(qTarget, TURN_FOLLOW);
-
-          v1.y += Math.sin(dt * 2 * Math.PI * wobbleHz + phase[i]) * wobbleAmp;
-          v1.normalize();
+        followerTimers[i] -= dt;
+        if (followerTimers[i] <= 0) {
+          setRandomFollowerOffset(followerOffsetTargets[i]);
+          followerTimers[i] =
+            THREE.MathUtils.randFloat(OFFSET_TIME_MIN, OFFSET_TIME_MAX);
         }
 
-        // forward movement along -Z
-        v3.set(0, 0, -1).applyQuaternion(f.quaternion);
-        f.position.addScaledVector(v3, SPEED_FOLLOW * dt);
+        followerOffsets[i].lerp(followerOffsetTargets[i], offsetLerp);
+        followerWanderPhase[i] += followerWanderSpeed[i] * dt;
+
+        v2.set(
+          Math.sin(followerWanderPhase[i] * 1.1 + i),
+          Math.cos(followerWanderPhase[i] * 0.8 + i * 0.37),
+          Math.sin(followerWanderPhase[i] * 1.3 - i)
+        ).multiplyScalar(WANDER_STRENGTH);
+
+        const targetPoint = v1
+          .copy(FIXED_TARGET)
+          .add(followerOffsets[i])
+          .add(v2);
+        const toTarget = v3.copy(targetPoint).sub(f.position);
+        const distance = toTarget.length();
+
+        if (distance > 1e-5) {
+          toTarget.multiplyScalar(1 / distance);
+          v2.copy(f.position).add(toTarget);
+          up.copy(f.up.lengthSq() ? f.up : FOLLOW_UP);
+          m4.lookAt(f.position, v2, up);
+          qTarget.setFromRotationMatrix(m4);
+          f.quaternion.slerp(qTarget, TURN_FOLLOW);
+        }
+
+        const desiredSpeed = THREE.MathUtils.lerp(
+          MIN_FOLLOW_SPEED,
+          MAX_FOLLOW_SPEED,
+          THREE.MathUtils.clamp(distance / OFFSET_RADIUS_MAX, 0, 1)
+        );
+        followerSpeeds[i] += (desiredSpeed - followerSpeeds[i]) * speedLerp;
+
+        const forward = v2.set(0, 0, -1).applyQuaternion(f.quaternion);
+        f.position.addScaledVector(forward, followerSpeeds[i] * dt);
       }
 
       controls.update();
