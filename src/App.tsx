@@ -129,6 +129,79 @@ float bayerDither(vec2 pos) {
       return mat;
     }
 
+    // Tiny seeded RNG so each index i is stable across reloads
+    function mulberry32(seed: number) {
+      return () => {
+        let t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    /**
+     * Vivid color with controllable variability & bias toward high saturation.
+     * - hueCenter: center hue in [0..1] (e.g. 0.58 ≈ blue). Set null to allow full rainbow.
+     * - hueSpread: how wide the hue range around center (0..0.5). 0.5 ~ full wheel.
+     * - satMin/satMax: saturation bounds.
+     * - satBias: >1 biases toward satMax (more saturated). 1 = uniform, 2-4 = vivid.
+     * - lightMid/lightSpread: target mid lightness & spread.
+     * - lightBias: >1 biases toward lightMid (contrast control).
+     */
+    function vividColorVariant(
+      i: number,
+      opts?: {
+        hueCenter?: number | null;
+        hueSpread?: number;
+        satMin?: number;
+        satMax?: number;
+        satBias?: number; // >1 => push saturation up
+        lightMid?: number; // 0..1
+        lightSpread?: number; // 0..0.5
+        lightBias?: number; // >1 => pull toward lightMid
+      }
+    ): THREE.Color {
+      const {
+        hueCenter = null, // null => full wheel
+        hueSpread = 0.5, // 0.5 ~ full wheel
+        satMin = 0.65,
+        satMax = 1.0,
+        satBias = 3.0, // ↑ make larger for more saturated colors
+        lightMid = 0.52,
+        lightSpread = 0.18, // increase for more variability
+        lightBias = 1.5,
+      } = opts || {};
+
+      const rnd = mulberry32(0x9e3779b1 ^ (i * 0x85ebca6b)); // stable per i
+      const r1 = rnd();
+      const r2 = rnd();
+      const r3 = rnd();
+
+      // Hue
+      let h: number;
+      if (hueCenter == null) {
+        h = r1; // full 0..1
+      } else {
+        const delta = (r1 * 2 - 1) * hueSpread; // [-spread..+spread]
+        h = (hueCenter + delta + 1) % 1;
+      }
+
+      // Saturation (ease-out toward 1): s = satMin..satMax with bias pushing high
+      // 1 - (1 - r)^k biases up as k increases
+      const sT = 1.0 - Math.pow(1.0 - r2, satBias);
+      const s = THREE.MathUtils.lerp(satMin, satMax, sT);
+
+      // Lightness around lightMid with spread and bias pulling back toward mid
+      const rawL = THREE.MathUtils.clamp(
+        lightMid + (r3 * 2 - 1) * lightSpread,
+        0,
+        1
+      );
+      const l = THREE.MathUtils.lerp(lightMid, rawL, 1.0 / lightBias);
+
+      return new THREE.Color().setHSL(h, s, l);
+    }
+
     function applyDitherToObject3D(
       root: THREE.Object3D,
       opts?: {
@@ -155,20 +228,14 @@ float bayerDither(vec2 pos) {
 
     // Subtle per-fish variation helpers
     const CERULEAN = new THREE.Color(0x2a52be);
-    function ceruleanVariant(i: number) {
-      // small hue wobble + brightness jitter
-      const c = CERULEAN.clone();
-      const hsl = { h: 0, s: 0, l: 0 };
-      c.getHSL(hsl as any);
-      hsl.h = (hsl.h + ((i * 0.07) % 1) * 0.05) % 1;
-      hsl.l = THREE.MathUtils.clamp(
-        hsl.l * THREE.MathUtils.lerp(0.9, 1.1, (Math.sin(i * 12.3) + 1) * 0.5),
-        0,
-        1
-      );
-      c.setHSL(hsl.h, hsl.s, hsl.l);
-      return c;
+    function ceruleanVariant(): THREE.Color {
+      const h = Math.random(); // hue anywhere
+      const s = 0.5 + 0.4 * Math.random(); // saturation 0.5–0.9
+      const l = 0.4 + 0.3 * Math.random(); // lightness 0.4–0.7
+
+      return new THREE.Color().setHSL(h, s, l);
     }
+
     function levelsVariant(i: number) {
       return THREE.MathUtils.clamp(
         3 + Math.round((Math.sin(i * 3.1) + 1) * 0.5 * 2),
@@ -258,8 +325,17 @@ float bayerDither(vec2 pos) {
           // Per-fish dither style
           applyDitherToObject3D(fish, {
             levels: levelsVariant(i),
-            tint: ceruleanVariant(i),
-            tintStrength: tintStrengthVariant(i),
+            tint: vividColorVariant(i, {
+              hueCenter: null, // full rainbow; set 0.58 for blue-centric
+              hueSpread: 0.5, // wider = more hue variety
+              satMin: 0.7,
+              satMax: 1.0,
+              satBias: 4.0, // ↑ pushes toward highly saturated colors
+              lightMid: 0.5,
+              lightSpread: 0.22, // ↑ more brightness variety
+              lightBias: 1.3, // lower => allow more deviation from mid
+            }),
+            tintStrength: tintStrengthVariant(i), // keep your existing strength fn
           });
 
           fishes.push(fish);
@@ -291,9 +367,9 @@ float bayerDither(vec2 pos) {
         // Player variant (slightly different look)
         if (player) {
           applyDitherToObject3D(player, {
-            levels: 4.0,
-            tint: 0xffffff,
-            tintStrength: 0.4,
+            levels: levelsVariant(1),
+            tint: 0xffffff, // pure white
+            tintStrength: tintStrengthVariant(1),
           });
         }
 
