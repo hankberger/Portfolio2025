@@ -226,16 +226,6 @@ float bayerDither(vec2 pos) {
       });
     }
 
-    // Subtle per-fish variation helpers
-    const CERULEAN = new THREE.Color(0x2a52be);
-    function ceruleanVariant(): THREE.Color {
-      const h = Math.random(); // hue anywhere
-      const s = 0.5 + 0.4 * Math.random(); // saturation 0.5–0.9
-      const l = 0.4 + 0.3 * Math.random(); // lightness 0.4–0.7
-
-      return new THREE.Color().setHSL(h, s, l);
-    }
-
     function levelsVariant(i: number) {
       return THREE.MathUtils.clamp(
         3 + Math.round((Math.sin(i * 3.1) + 1) * 0.5 * 2),
@@ -296,7 +286,7 @@ float bayerDither(vec2 pos) {
         const template = gltf.scene;
         const clip = gltf.animations?.[0];
 
-        const COUNT = 15;
+        const COUNT = 20;
         for (let i = 0; i < COUNT; i++) {
           const fish = clone(template) as THREE.Object3D;
 
@@ -320,7 +310,9 @@ float bayerDither(vec2 pos) {
             THREE.MathUtils.randFloatSpread(10)
           );
           fish.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
-          fish.scale.setScalar(THREE.MathUtils.randFloat(0.4, 1));
+          if (i !== 0) {
+            fish.scale.setScalar(THREE.MathUtils.randFloat(0.4, 0.9));
+          }
 
           // Per-fish dither style
           applyDitherToObject3D(fish, {
@@ -380,22 +372,70 @@ float bayerDither(vec2 pos) {
     );
 
     // ---------------------------- Interaction & movement ----------------------------
+    // --- ray/time/mouse ---
     const clock = new THREE.Clock();
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+
+    // --- planes ---
+    // ground: y = 0 (XZ)
     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+    // vertical-ish plane: start with up (0,1,0) and tilt it 45° around X
+    const verticalPlane = new THREE.Plane();
+    {
+      const normal = new THREE.Vector3(0, 1, 0);
+      normal.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 4); // tilt 45° around X
+      verticalPlane.setFromNormalAndCoplanarPoint(
+        normal,
+        new THREE.Vector3(0, 0, 0)
+      );
+    }
+
+    // visualize
+    // const planeHelper = new THREE.PlaneHelper(groundPlane, 20, 0x00ff88); // green
+    // const planeHelper2 = new THREE.PlaneHelper(verticalPlane, 20, 0xff8800); // orange
+    // //scene.add(planeHelper, planeHelper2);
+
+    // const axesHelper = new THREE.AxesHelper(5);
+    // scene.add(axesHelper);
+
+    // target + temp hit points
     const mouseTarget = new THREE.Vector3();
+    const hitGround = new THREE.Vector3();
+    const hitVertical = new THREE.Vector3();
 
     function ndcFromEvent(e: MouseEvent) {
       const rect = renderer.domElement.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     }
+
     function onMouseMove(e: MouseEvent) {
       ndcFromEvent(e);
       raycaster.setFromCamera(mouse, camera);
-      raycaster.ray.intersectPlane(groundPlane, mouseTarget);
+
+      const gotGround = raycaster.ray.intersectPlane(groundPlane, hitGround);
+      const gotVertical = raycaster.ray.intersectPlane(
+        verticalPlane,
+        hitVertical
+      );
+
+      if (gotGround && gotVertical) {
+        // pick the nearer intersection along the ray
+        const dG2 = raycaster.ray.origin.distanceToSquared(hitGround);
+        const dV2 = raycaster.ray.origin.distanceToSquared(hitVertical);
+        mouseTarget.copy(dG2 < dV2 ? hitGround : hitVertical);
+      } else if (gotGround) {
+        mouseTarget.copy(hitGround);
+      } else if (gotVertical) {
+        mouseTarget.copy(hitVertical);
+      } else {
+        // no hit; optionally keep previous or hide a marker
+        // e.g., mouseTarget.set(NaN, NaN, NaN);
+      }
     }
+
     renderer.domElement.addEventListener("mousemove", onMouseMove);
 
     // temps
