@@ -250,13 +250,13 @@ float bayerDither(vec2 pos) {
     const followerWanderSpeed: number[] = [];
 
     const OFFSET_RADIUS_MIN = 2.0;
-    const OFFSET_RADIUS_MAX = 6.0;
+    const OFFSET_RADIUS_MAX = 8.0;
     const OFFSET_TIME_MIN = 1.5;
     const OFFSET_TIME_MAX = 3.5;
     const OFFSET_SMOOTH = 1.8;
     const SPEED_SMOOTH = 3.0;
-    const MIN_FOLLOW_SPEED = 0.9;
-    const MAX_FOLLOW_SPEED = 1.5;
+    const MIN_FOLLOW_SPEED = 0.6;
+    const MAX_FOLLOW_SPEED = 1.2;
     const MAX_AVOID_SPEED = 10.0;
     const WANDER_STRENGTH = 0.55;
     const PLAYER_AVOID_RADIUS = 10;
@@ -319,12 +319,12 @@ float bayerDither(vec2 pos) {
             levels: levelsVariant(i),
             tint: vividColorVariant(i, {
               hueCenter: null, // full rainbow; set 0.58 for blue-centric
-              hueSpread: 0.5, // wider = more hue variety
-              satMin: 0.7,
+              hueSpread: 0.7, // wider = more hue variety
+              satMin: 0.8,
               satMax: 1.0,
-              satBias: 4.0, // ↑ pushes toward highly saturated colors
+              satBias: 8, // ↑ pushes toward highly saturated colors
               lightMid: 0.5,
-              lightSpread: 0.22, // ↑ more brightness variety
+              lightSpread: 0.05, // ↑ more brightness variety
               lightBias: 1.3, // lower => allow more deviation from mid
             }),
             tintStrength: tintStrengthVariant(i), // keep your existing strength fn
@@ -449,8 +449,8 @@ float bayerDither(vec2 pos) {
     // tuning
     const TURN_LEADER = 0.006;
     const SPEED_LEADER = 6.0;
-    const ARRIVE_RADIUS = 8.0;
-    const TURN_FOLLOW = 0.002;
+    const ARRIVE_RADIUS = 6.0;
+    const TURN_FOLLOW = 0.0025;
     const FOLLOW_UP = new THREE.Vector3(0, 1, 0);
     const FIXED_TARGET = new THREE.Vector3(0, 0, 0);
 
