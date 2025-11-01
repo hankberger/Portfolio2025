@@ -20,7 +20,8 @@ function App() {
       0.01,
       1000
     );
-    camera.position.set(0, 1, 3);
+    camera.position.set(-4, 2, 13);
+    camera.rotateX(-Math.PI / 16);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -28,8 +29,8 @@ function App() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     mountRef.current!.appendChild(renderer.domElement);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+    // const controls = new OrbitControls(camera, renderer.domElement);
+    // controls.enableDamping = true;
 
     // ---------------------------- Lights ----------------------------
     const hemiLight = new THREE.HemisphereLight(0xbcd7ff, 0x223355, 1.0);
@@ -593,7 +594,7 @@ float bayerDither(vec2 pos) {
         f.position.addScaledVector(forward, followerSpeeds[i] * dt);
       }
 
-      controls.update();
+      // controls.update();
 
       renderer.setRenderTarget(null);
       renderer.clear();
