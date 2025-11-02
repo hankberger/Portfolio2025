@@ -5,15 +5,18 @@ import "./App.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
+import HankCard from "./components/HankCard";
 
 function App() {
-  const mountRef = useRef<HTMLDivElement | null>(null);
+  // Canvas + UI refs for the 3-layer stack
+  const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const uiRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // ---------------------------- Scene / Camera / Renderer ----------------------------
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0147ff);
-
+    // ---------------------------- Shared Camera ----------------------------
     const camera = new THREE.PerspectiveCamera(
       60,
       window.innerWidth / window.innerHeight,
@@ -23,26 +26,82 @@ function App() {
     camera.position.set(-4, 2, 13);
     camera.rotateX(-Math.PI / 16);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    mountRef.current!.appendChild(renderer.domElement);
+    // ---------------------------- Background Renderer / Scene ----------------------------
+    const bgRenderer = new THREE.WebGLRenderer({
+      canvas: bgCanvasRef.current!,
+      antialias: true,
+      alpha: false, // solid background
+    });
+    bgRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    bgRenderer.setSize(window.innerWidth, window.innerHeight);
+    bgRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    bgRenderer.setClearColor(0x0147ff, 1.0); // same blue you had
 
-    // const controls = new OrbitControls(camera, renderer.domElement);
-    // controls.enableDamping = true;
+    const bgScene = new THREE.Scene();
+    // bgScene.background = new THREE.Color(0x0147ff); // clearColor already covers
+
+    // ---------------------------- Foreground Renderer / Scene ----------------------------
+    const fgRenderer = new THREE.WebGLRenderer({
+      canvas: fgCanvasRef.current!,
+      antialias: true,
+      alpha: true, // must be transparent so DOM is visible underneath
+      premultipliedAlpha: true,
+    });
+    fgRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    fgRenderer.setSize(window.innerWidth, window.innerHeight);
+    fgRenderer.outputColorSpace = THREE.SRGBColorSpace;
+    fgRenderer.setClearColor(0x000000, 0.0); // fully transparent
+
+    const fgScene = new THREE.Scene();
 
     // ---------------------------- Lights ----------------------------
+    // We apply lights to BOTH scenes as needed. Since we're actually drawing the fish in fgScene
+    // we want usable light there.
     const hemiLight = new THREE.HemisphereLight(0xbcd7ff, 0x223355, 1.0);
     hemiLight.position.set(0, 2, 0);
-    scene.add(hemiLight);
+    fgScene.add(hemiLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
     dirLight.position.set(3, 5, 4);
-    scene.add(dirLight);
+    fgScene.add(dirLight);
+
+    // ---------------------------- OPTIONAL: loadHankModel for background ----------------------------
+    // If you want hank.glb as "background world", we'd add it to bgScene instead of fgScene.
+    // Leaving the loader function here in case you re-enable it.
+    const HANK_URL = new URL("/hank.glb", import.meta.url).href;
+
+    function loadHankModel(intoScene: THREE.Scene) {
+      const loader = new GLTFLoader();
+      loader.load(
+        HANK_URL,
+        (gltf) => {
+          const model = gltf.scene;
+          model.traverse((child: any) => {
+            if (child.isMesh) {
+              child.material = new THREE.MeshBasicMaterial({
+                color: 0xffffff, // pure white
+                side: THREE.FrontSide,
+              });
+              child.frustumCulled = false;
+              child.castShadow = false;
+              child.receiveShadow = false;
+            }
+          });
+          model.position.set(-20, 0, -10);
+          model.rotateX(-Math.PI / 16);
+          model.scale.setScalar(5);
+          intoScene.add(model);
+        },
+        undefined,
+        (error) => {
+          console.error("❌ Error loading hank.glb:", error);
+        }
+      );
+    }
+    // Uncomment this if you want hank in the blue background layer:
+    // loadHankModel(bgScene);
 
     // ---------------------------- Dither helpers ----------------------------
-    // keep references so we tick time once per material
     const ditherMats = new Set<THREE.Material>();
 
     function ditherizeMaterial<T extends THREE.Material>(
@@ -60,13 +119,11 @@ function App() {
       };
 
       mat.onBeforeCompile = (shader: any) => {
-        // JS-side uniforms
         shader.uniforms.levels = { value: levels };
         shader.uniforms.time = { value: 0.0 };
         shader.uniforms.tint = { value: new THREE.Color(tint) };
         shader.uniforms.tintStrength = { value: tintStrength };
 
-        // 1) uniform declarations + helper function OUTSIDE main
         const header = `
 uniform float levels;
 uniform float time;
@@ -86,7 +143,6 @@ float bayerDither(vec2 pos) {
           `#include <common>\n${header}`
         );
 
-        // 2) operation INSIDE main (after toneMapping/colorspace if present)
         const injectBlock = `
 {
   float d = bayerDither(gl_FragCoord.xy + time * 30.0);
@@ -130,7 +186,7 @@ float bayerDither(vec2 pos) {
       return mat;
     }
 
-    // Tiny seeded RNG so each index i is stable across reloads
+    // Tiny seeded RNG so each index i is stable
     function mulberry32(seed: number) {
       return () => {
         let t = (seed += 0x6d2b79f5);
@@ -140,15 +196,6 @@ float bayerDither(vec2 pos) {
       };
     }
 
-    /**
-     * Vivid color with controllable variability & bias toward high saturation.
-     * - hueCenter: center hue in [0..1] (e.g. 0.58 ≈ blue). Set null to allow full rainbow.
-     * - hueSpread: how wide the hue range around center (0..0.5). 0.5 ~ full wheel.
-     * - satMin/satMax: saturation bounds.
-     * - satBias: >1 biases toward satMax (more saturated). 1 = uniform, 2-4 = vivid.
-     * - lightMid/lightSpread: target mid lightness & spread.
-     * - lightBias: >1 biases toward lightMid (contrast control).
-     */
     function vividColorVariant(
       i: number,
       opts?: {
@@ -156,43 +203,39 @@ float bayerDither(vec2 pos) {
         hueSpread?: number;
         satMin?: number;
         satMax?: number;
-        satBias?: number; // >1 => push saturation up
-        lightMid?: number; // 0..1
-        lightSpread?: number; // 0..0.5
-        lightBias?: number; // >1 => pull toward lightMid
+        satBias?: number;
+        lightMid?: number;
+        lightSpread?: number;
+        lightBias?: number;
       }
     ): THREE.Color {
       const {
-        hueCenter = null, // null => full wheel
-        hueSpread = 0.5, // 0.5 ~ full wheel
+        hueCenter = null,
+        hueSpread = 0.5,
         satMin = 0.65,
         satMax = 1.0,
-        satBias = 3.0, // ↑ make larger for more saturated colors
+        satBias = 3.0,
         lightMid = 0.52,
-        lightSpread = 0.18, // increase for more variability
+        lightSpread = 0.18,
         lightBias = 1.5,
       } = opts || {};
 
-      const rnd = mulberry32(0x9e3779b1 ^ (i * 0x85ebca6b)); // stable per i
+      const rnd = mulberry32(0x9e3779b1 ^ (i * 0x85ebca6b));
       const r1 = rnd();
       const r2 = rnd();
       const r3 = rnd();
 
-      // Hue
       let h: number;
       if (hueCenter == null) {
-        h = r1; // full 0..1
+        h = r1;
       } else {
-        const delta = (r1 * 2 - 1) * hueSpread; // [-spread..+spread]
+        const delta = (r1 * 2 - 1) * hueSpread;
         h = (hueCenter + delta + 1) % 1;
       }
 
-      // Saturation (ease-out toward 1): s = satMin..satMax with bias pushing high
-      // 1 - (1 - r)^k biases up as k increases
       const sT = 1.0 - Math.pow(1.0 - r2, satBias);
       const s = THREE.MathUtils.lerp(satMin, satMax, sT);
 
-      // Lightness around lightMid with spread and bias pulling back toward mid
       const rawL = THREE.MathUtils.clamp(
         lightMid + (r3 * 2 - 1) * lightSpread,
         0,
@@ -238,7 +281,7 @@ float bayerDither(vec2 pos) {
       return THREE.MathUtils.lerp(0.35, 0.75, (Math.cos(i * 5.7) + 1) * 0.5);
     }
 
-    // ---------------------------- GLTF load / clones ----------------------------
+    // ---------------------------- Fish / Animation State ----------------------------
     let mixer: THREE.AnimationMixer | null = null;
     let player: THREE.Object3D;
     const fishes: THREE.Object3D[] = [];
@@ -280,6 +323,7 @@ float bayerDither(vec2 pos) {
       return target;
     };
 
+    // ---------------------------- Load Fish GLTF into fgScene ----------------------------
     const loader = new GLTFLoader();
     loader.load(
       "./fish3.glb",
@@ -315,24 +359,23 @@ float bayerDither(vec2 pos) {
             fish.scale.setScalar(THREE.MathUtils.randFloat(0.4, 0.9));
           }
 
-          // Per-fish dither style
           applyDitherToObject3D(fish, {
             levels: levelsVariant(i),
             tint: vividColorVariant(i, {
-              hueCenter: null, // full rainbow; set 0.58 for blue-centric
-              hueSpread: 0.7, // wider = more hue variety
+              hueCenter: null,
+              hueSpread: 0.7,
               satMin: 0.8,
               satMax: 1.0,
-              satBias: 8, // ↑ pushes toward highly saturated colors
+              satBias: 8,
               lightMid: 0.5,
-              lightSpread: 0.05, // ↑ more brightness variety
-              lightBias: 1.3, // lower => allow more deviation from mid
+              lightSpread: 0.05,
+              lightBias: 1.3,
             }),
-            tintStrength: tintStrengthVariant(i), // keep your existing strength fn
+            tintStrength: tintStrengthVariant(i),
           });
 
           fishes.push(fish);
-          scene.add(fish);
+          fgScene.add(fish);
 
           followerSpeeds.push(
             THREE.MathUtils.randFloat(MIN_FOLLOW_SPEED, MAX_FOLLOW_SPEED)
@@ -357,11 +400,11 @@ float bayerDither(vec2 pos) {
 
         player = fishes[0];
 
-        // Player variant (slightly different look)
+        // Player variant override (bright white leader)
         if (player) {
           applyDitherToObject3D(player, {
             levels: levelsVariant(1),
-            tint: 0xffffff, // pure white
+            tint: 0xffffff,
             tintStrength: tintStrengthVariant(1),
           });
         }
@@ -373,41 +416,31 @@ float bayerDither(vec2 pos) {
     );
 
     // ---------------------------- Interaction & movement ----------------------------
-    // --- ray/time/mouse ---
     const clock = new THREE.Clock();
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    // --- planes ---
-    // ground: y = 0 (XZ)
+    // planes for pointer targeting
     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
-    // vertical-ish plane: start with up (0,1,0) and tilt it 45° around X
     const verticalPlane = new THREE.Plane();
     {
       const normal = new THREE.Vector3(0, 1, 0);
-      normal.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 4); // tilt 45° around X
+      normal.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 4);
       verticalPlane.setFromNormalAndCoplanarPoint(
         normal,
         new THREE.Vector3(0, 0, 0)
       );
     }
 
-    // visualize
-    // const planeHelper = new THREE.PlaneHelper(groundPlane, 20, 0x00ff88); // green
-    // const planeHelper2 = new THREE.PlaneHelper(verticalPlane, 20, 0xff8800); // orange
-    // //scene.add(planeHelper, planeHelper2);
-
-    // const axesHelper = new THREE.AxesHelper(5);
-    // scene.add(axesHelper);
-
-    // target + temp hit points
     const mouseTarget = new THREE.Vector3();
     const hitGround = new THREE.Vector3();
     const hitVertical = new THREE.Vector3();
 
     function ndcFromEvent(e: MouseEvent) {
-      const rect = renderer.domElement.getBoundingClientRect();
+      // We attach pointer events to the BACKGROUND canvas,
+      // since the FOREGROUND canvas has pointer-events:none.
+      const rect = bgCanvasRef.current!.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     }
@@ -423,7 +456,6 @@ float bayerDither(vec2 pos) {
       );
 
       if (gotGround && gotVertical) {
-        // pick the nearer intersection along the ray
         const dG2 = raycaster.ray.origin.distanceToSquared(hitGround);
         const dV2 = raycaster.ray.origin.distanceToSquared(hitVertical);
         mouseTarget.copy(dG2 < dV2 ? hitGround : hitVertical);
@@ -431,15 +463,12 @@ float bayerDither(vec2 pos) {
         mouseTarget.copy(hitGround);
       } else if (gotVertical) {
         mouseTarget.copy(hitVertical);
-      } else {
-        // no hit; optionally keep previous or hide a marker
-        // e.g., mouseTarget.set(NaN, NaN, NaN);
       }
     }
 
-    renderer.domElement.addEventListener("mousemove", onMouseMove);
+    bgCanvasRef.current!.addEventListener("mousemove", onMouseMove);
 
-    // temps
+    // temps / tunables reused from your single-scene version
     const v1 = new THREE.Vector3();
     const v2 = new THREE.Vector3();
     const v3 = new THREE.Vector3();
@@ -447,7 +476,6 @@ float bayerDither(vec2 pos) {
     const qTarget = new THREE.Quaternion();
     const m4 = new THREE.Matrix4();
 
-    // tuning
     const TURN_LEADER = 0.006;
     const SPEED_LEADER = 6.0;
     const ARRIVE_RADIUS = 6.0;
@@ -456,10 +484,13 @@ float bayerDither(vec2 pos) {
     const FIXED_TARGET = new THREE.Vector3(0, 0, 0);
 
     // ---------------------------- Animate ----------------------------
+    let running = true;
     const animate = () => {
+      if (!running) return;
+
       const dt = Math.min(clock.getDelta(), 0.033);
 
-      // tick time once per unique material
+      // tick time once per unique material for dithering
       ditherMats.forEach((mat: any) => {
         const sh = mat?.userData?._shader;
         if (sh?.uniforms?.time) sh.uniforms.time.value += dt;
@@ -478,10 +509,12 @@ float bayerDither(vec2 pos) {
           const speedFactor = dist < ARRIVE_RADIUS ? dist / ARRIVE_RADIUS : 1.0;
           const step = SPEED_LEADER * speedFactor * dt;
           if (mixer) mixer.update(Math.max(step, 0.005));
+
           v2.set(0, 0, -1)
             .applyQuaternion(player.quaternion)
             .multiplyScalar(step);
           player.position.add(v2);
+
           v3.copy(player.position).add(v1);
           up.copy(player.up.lengthSq() ? player.up : up.set(0, 1, 0));
           m4.lookAt(player.position, v3, up);
@@ -590,41 +623,88 @@ float bayerDither(vec2 pos) {
           (desiredSpeed - followerSpeeds[i]) * dynamicSpeedLerp;
 
         if (mix) mix.update(dynamicSpeedLerp * 0.33);
+
         const forward = v2.set(0, 0, -1).applyQuaternion(f.quaternion);
         f.position.addScaledVector(forward, followerSpeeds[i] * dt);
       }
 
-      // controls.update();
+      // pass 1: background
+      bgRenderer.render(bgScene, camera);
+      // DOM layer sits visually above that
 
-      renderer.setRenderTarget(null);
-      renderer.clear();
-      renderer.render(scene, camera);
+      // pass 2: foreground (fish over DOM)
+      fgRenderer.render(fgScene, camera);
 
       requestAnimationFrame(animate);
     };
     animate();
 
     // ---------------------------- Resize ----------------------------
-    const handleResize = () => {
-      const w = window.innerWidth,
-        h = window.innerHeight;
+    function handleResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
+
+      bgRenderer.setSize(w, h);
+      fgRenderer.setSize(w, h);
+    }
     window.addEventListener("resize", handleResize);
 
     // ---------------------------- Cleanup ----------------------------
     return () => {
+      running = false;
       window.removeEventListener("resize", handleResize);
-      renderer.dispose();
-      if (renderer.domElement.parentNode) {
-        renderer.domElement.parentNode.removeChild(renderer.domElement);
-      }
+      if (bgCanvasRef.current)
+        bgCanvasRef.current.removeEventListener("mousemove", onMouseMove);
+
+      bgRenderer.dispose();
+      fgRenderer.dispose();
     };
   }, []);
 
-  return <div ref={mountRef} />;
+  // ---------------------------- Render JSX ----------------------------
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        overflow: "hidden",
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
+      {/* Background scene (under UI) */}
+      <canvas
+        ref={bgCanvasRef}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 0,
+          pointerEvents: "auto", // we listen for mousemove here
+        }}
+      />
+
+      {/* UI layer (middle) */}
+      <HankCard />
+
+      {/* Foreground scene (fish OVER ui) */}
+      <canvas
+        ref={fgCanvasRef}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 2,
+          pointerEvents: "none", // don't block clicks on UI
+        }}
+      />
+    </div>
+  );
 }
 
 export default App;

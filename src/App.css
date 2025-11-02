@@ -7,3 +7,15 @@ canvas {
 #mountRef {
   display: none;
 }
+
+.header {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+}
+
+#mount {
+  z-index: 9999;
+}
