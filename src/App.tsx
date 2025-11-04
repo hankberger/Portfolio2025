@@ -13,7 +13,6 @@ function App() {
   // Canvas + UI refs for the 3-layer stack
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const uiRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // ---------------------------- Shared Camera ----------------------------
@@ -62,44 +61,8 @@ function App() {
     fgScene.add(hemiLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(3, 5, 4);
+    dirLight.position.set(2, 5, 6);
     fgScene.add(dirLight);
-
-    // ---------------------------- OPTIONAL: loadHankModel for background ----------------------------
-    // If you want hank.glb as "background world", we'd add it to bgScene instead of fgScene.
-    // Leaving the loader function here in case you re-enable it.
-    const HANK_URL = new URL("/hank.glb", import.meta.url).href;
-
-    function loadHankModel(intoScene: THREE.Scene) {
-      const loader = new GLTFLoader();
-      loader.load(
-        HANK_URL,
-        (gltf) => {
-          const model = gltf.scene;
-          model.traverse((child: any) => {
-            if (child.isMesh) {
-              child.material = new THREE.MeshBasicMaterial({
-                color: 0xffffff, // pure white
-                side: THREE.FrontSide,
-              });
-              child.frustumCulled = false;
-              child.castShadow = false;
-              child.receiveShadow = false;
-            }
-          });
-          model.position.set(-20, 0, -10);
-          model.rotateX(-Math.PI / 16);
-          model.scale.setScalar(5);
-          intoScene.add(model);
-        },
-        undefined,
-        (error) => {
-          console.error("❌ Error loading hank.glb:", error);
-        }
-      );
-    }
-    // Uncomment this if you want hank in the blue background layer:
-    // loadHankModel(bgScene);
 
     // ---------------------------- Dither helpers ----------------------------
     const ditherMats = new Set<THREE.Material>();
@@ -476,9 +439,9 @@ float bayerDither(vec2 pos) {
     const qTarget = new THREE.Quaternion();
     const m4 = new THREE.Matrix4();
 
-    const TURN_LEADER = 0.006;
-    const SPEED_LEADER = 6.0;
-    const ARRIVE_RADIUS = 6.0;
+    const TURN_LEADER = 0.008;
+    const SPEED_LEADER = 7.0;
+    const ARRIVE_RADIUS = 4.0;
     const TURN_FOLLOW = 0.0025;
     const FOLLOW_UP = new THREE.Vector3(0, 1, 0);
     const FIXED_TARGET = new THREE.Vector3(0, 0, 0);
@@ -505,7 +468,7 @@ float bayerDither(vec2 pos) {
         const dist = v1.length();
 
         if (dist > 1e-3) {
-          v1.multiplyScalar(1 / dist);
+          v1.multiplyScalar(1 / (dist * Math.min(1, dist)));
           const speedFactor = dist < ARRIVE_RADIUS ? dist / ARRIVE_RADIUS : 1.0;
           const step = SPEED_LEADER * speedFactor * dt;
           if (mixer) mixer.update(Math.max(step, 0.005));

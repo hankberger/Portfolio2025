@@ -1,13 +1,55 @@
 .HankCard {
-  border: 2px solid #ffffff;
-  height: 100px;
-  width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  width: auto;
   position: absolute;
   top: 50%;
   left: 25%;
+  padding: 10px;
   transform: translate(-50%, -50%);
-
-  background-color: white;
+  /* background-color: white; */
   border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 2px rgba(0, 0, 0, 0.04);
+  /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 2px rgba(0, 0, 0, 0.04); */
+}
+
+h1 {
+  font-family: "DM Serif Display", serif;
+  font-weight: 400;
+  font-style: normal;
+  margin: 0px;
+  padding: 0px;
+  color: white;
+  font-size: 4rem;
+}
+
+h2 {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 100;
+  font-style: normal;
+  color: white;
+  margin: 0px;
+  font-size: 2.25rem;
+  margin-top: -25px;
+  margin-left: 5px;
+}
+
+.HankImage {
+  height: 40px;
+  width: 40px;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+nav {
+  display: flex;
+}
+
+.sparkle {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 90px;
+  margin-top: 14px;
 }
