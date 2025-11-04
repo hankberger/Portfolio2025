@@ -469,7 +469,10 @@ float bayerDither(vec2 pos) {
 
         if (dist > 1e-3) {
           v1.multiplyScalar(1 / (dist * Math.min(1, dist)));
-          const speedFactor = dist < ARRIVE_RADIUS ? dist / ARRIVE_RADIUS : 1.0;
+          const speedFactor =
+            dist < ARRIVE_RADIUS
+              ? (dist / ARRIVE_RADIUS) * Math.min(1, dist)
+              : 1.0;
           const step = SPEED_LEADER * speedFactor * dt;
           if (mixer) mixer.update(Math.max(step, 0.005));
 
