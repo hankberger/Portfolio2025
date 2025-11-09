@@ -5,9 +5,8 @@ import "./App.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import HankCard from "./components/HankCard";
+import MouseEffect from "./components/MouseEffect";
 
 function App() {
   // Canvas + UI refs for the 3-layer stack
@@ -215,6 +214,8 @@ float bayerDither(vec2 pos) {
         levels?: number;
         tint?: THREE.Color | number | string;
         tintStrength?: number;
+        emissive?: THREE.Color | number | string;
+        emissiveIntensity?: number;
       }
     ) {
       root.traverse((o: any) => {
@@ -223,6 +224,63 @@ float bayerDither(vec2 pos) {
         const wrap = (m: THREE.Material) => {
           const wrapped = ditherizeMaterial(m, opts);
           ditherMats.add(wrapped);
+
+          const emissive = opts?.emissive ?? 0x000000;
+          const emissiveIntensity = opts?.emissiveIntensity ?? 0.0;
+
+          // If it's a PBR-like material, use native emissive fields
+          if (
+            (wrapped as any).isMeshStandardMaterial ||
+            (wrapped as any).isMeshPhysicalMaterial ||
+            (wrapped as any).isMeshLambertMaterial ||
+            (wrapped as any).isMeshPhongMaterial
+          ) {
+            const mat = wrapped as any;
+            if (!mat.emissive) mat.emissive = new THREE.Color(0x000000);
+            mat.emissive.set(emissive as any);
+            mat.emissiveIntensity = emissiveIntensity;
+            mat.needsUpdate = true;
+            return wrapped;
+          }
+
+          // For non-PBR materials, inject a simple emissive term in shader
+          const prev = (wrapped as any).onBeforeCompile;
+          (wrapped as any).onBeforeCompile = (shader: any) => {
+            if (typeof prev === "function") prev(shader);
+
+            shader.uniforms.uEmissive = {
+              value: new THREE.Color(emissive as any),
+            };
+            shader.uniforms.uEmissiveIntensity = { value: emissiveIntensity };
+
+            let frag = shader.fragmentShader;
+            frag = frag.replace(
+              /void\s+main\s*\(\s*\)\s*{/,
+              (m: any) =>
+                `${m}\n  vec3 emissiveTerm = uEmissive.rgb * uEmissiveIntensity;\n`
+            );
+
+            if (frag.includes("gl_FragColor = vec4(")) {
+              frag = frag.replace(
+                /gl_FragColor\s*=\s*vec4\(\s*([^)]+)\s*,\s*([^)]+)\s*\)\s*;/,
+                "gl_FragColor = vec4(($1) + emissiveTerm, $2);"
+              );
+            } else if (frag.includes("#include <output_fragment>")) {
+              frag = frag.replace(
+                "#include <output_fragment>",
+                `#include <output_fragment>\n  gl_FragColor.rgb += emissiveTerm;`
+              );
+            } else {
+              frag = frag.replace(
+                /}\s*$/,
+                `  gl_FragColor.rgb += emissiveTerm;\n}\n`
+              );
+            }
+
+            shader.fragmentShader = frag;
+          };
+
+          (wrapped as any).needsUpdate = true;
           return wrapped;
         };
 
@@ -369,6 +427,8 @@ float bayerDither(vec2 pos) {
             levels: levelsVariant(1),
             tint: 0xffffff,
             tintStrength: tintStrengthVariant(1),
+            emissive: 0xffffff, // bright white emission (can be color or THREE.Color)
+            emissiveIntensity: 0.3, // adjust brightness (try 0.3–2.0)
           });
         }
 
