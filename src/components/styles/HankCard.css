@@ -71,14 +71,14 @@ button {
   font-family: "DM Sans", sans-serif;
   font-optical-sizing: auto;
   font-weight: 300;
-  padding: 10px 15px;
+  padding: 10px 10px 10px 20px;
   cursor: pointer;
-  gap: 5px;
+  gap: 2px;
 }
 
 .chevron {
   height: 1rem;
-  width: min-content;
+  width: 30px;
   margin-top: 3px;
 }
 
