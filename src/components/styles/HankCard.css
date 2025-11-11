@@ -42,39 +42,50 @@ h2 {
 }
 
 .divider {
-  height: 1px;
-  width: calc(100% - 4.5rem);
+  height: min-content;
   margin-left: 4.5rem;
   overflow: hidden;
   border-radius: 10px;
-  background-color: white;
+  border: 1px solid white;
+  background-color: rgba(255, 255, 255, 0);
+  width: min-content;
 }
 
 nav {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  width: 1.5rem;
-  gap: 30px;
-  margin-top: 30px;
-  margin-left: 4.5rem;
+  padding: 10px;
+  gap: 5px;
 }
 
-nav button {
+button {
   display: flex;
-  width: min-content;
+  width: max-content;
   font-size: 1rem;
   align-items: center;
+  justify-content: center;
   background-color: transparent;
-  border: 0px solid white;
+  border: 1px solid white;
   border-radius: 5px;
   color: white;
   font-family: "DM Sans", sans-serif;
   font-optical-sizing: auto;
   font-weight: 300;
-  gap: 2px;
-  text-decoration: underline;
+  padding: 10px 15px;
+  cursor: pointer;
+  gap: 5px;
+}
+
+.chevron {
+  height: 1rem;
+  width: min-content;
+  margin-top: 3px;
+}
+
+.watchButton {
+  color: white;
+  font-weight: 200;
+  font-size: 0.75rem;
 }
 
 nav button:hover {
@@ -119,6 +130,18 @@ nav svg {
 .content {
   margin-top: 5px;
   display: flex;
-  justify-content: center;
-  height: 600px;
+  flex-direction: column;
+  justify-content: left;
+  width: max-content;
+  margin-left: 4.5rem;
+  gap: 10px;
+}
+
+a {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
