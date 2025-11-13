@@ -528,7 +528,7 @@ float bayerDither(vec2 pos) {
         typeof player !== "undefined" &&
         (mouseTarget.x || mouseTarget.y || mouseTarget.z)
       ) {
-        v1.copy(scatter ? new THREE.Vector3(-10, 0, 30) : mouseTarget).sub(
+        v1.copy(scatter ? new THREE.Vector3(0, -20, 10) : mouseTarget).sub(
           player.position
         );
         const dist = v1.length();
@@ -589,7 +589,7 @@ float bayerDither(vec2 pos) {
         let avoidanceFactor = 0;
 
         const targetPoint = v1
-          .copy(scatter ? new THREE.Vector3(30, 0, 10) : FIXED_TARGET)
+          .copy(scatter ? new THREE.Vector3(10, -15, 20) : FIXED_TARGET)
           .add(followerOffsets[i])
           .add(v2);
 
@@ -631,11 +631,16 @@ float bayerDither(vec2 pos) {
           f.quaternion.slerp(qTarget, TURN_FOLLOW * turnGain);
         }
 
-        let desiredSpeed = THREE.MathUtils.lerp(
-          MIN_FOLLOW_SPEED,
-          MAX_FOLLOW_SPEED,
-          THREE.MathUtils.clamp(distance / OFFSET_RADIUS_MAX, 0, 1)
-        );
+        let desiredSpeed = 0;
+        if (distance > 15) {
+          desiredSpeed = 10;
+        } else {
+          desiredSpeed = THREE.MathUtils.lerp(
+            MIN_FOLLOW_SPEED,
+            MAX_FOLLOW_SPEED,
+            THREE.MathUtils.clamp(distance / OFFSET_RADIUS_MAX, 0, 1)
+          );
+        }
 
         if (avoidanceFactor > 0) {
           const speedEase = 1 - Math.pow(1 - avoidanceFactor, 4);

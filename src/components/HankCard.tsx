@@ -8,8 +8,8 @@ interface IHankCard {
 
 export default function HankCard(props: IHankCard) {
   const scatterCallback = props.scatterCallback;
-  const navbarRef = useRef<HTMLElement>(null);
-  const chevronPathRef = useRef<SVGPathElement>(null); // <— path we morph
+  let contentHeight = 0;
+  let buttonWidth = 0;
 
   useEffect(() => {
     const { chars } = splitText("h1", { words: false, chars: true });
@@ -79,29 +79,68 @@ export default function HankCard(props: IHankCard) {
   }, []);
 
   const toggle = () => {
-    document.getElementsByClassName("HankCard")[0].classList.toggle("big");
+    const hankcard = document.getElementsByClassName("HankCard")[0];
 
-    animate(".getStarted", {
-      width: {
-        to: "100%",
-        duration: 400,
-        ease: easings.spring({ mass: 1 }),
-      },
-      borderRadius: {
-        to: "25px",
-        duration: 200,
-      },
-    });
+    hankcard.classList.toggle("big");
 
-    animate(".content", {
-      height: {
-        to: "75%",
-        duration: 400,
-        ease: easings.spring({ mass: 1 }),
-      },
-    });
+    const gettinBigger = hankcard.classList.contains("big");
+    scatterCallback(gettinBigger);
 
-    scatterCallback(true);
+    if (gettinBigger) {
+      contentHeight =
+        contentHeight == 0
+          ? document.getElementsByClassName("content")[0].clientHeight
+          : contentHeight;
+      buttonWidth =
+        buttonWidth == 0
+          ? document.getElementsByClassName("getStarted")[0].clientWidth
+          : buttonWidth;
+
+      console.log({ buttonWidth, contentHeight });
+
+      animate(".getStarted", {
+        width: {
+          to: "100%",
+          duration: 400,
+          ease: easings.spring({ mass: 1 }),
+        },
+        borderRadius: {
+          from: "5px",
+          to: "25px",
+          duration: 200,
+        },
+      });
+
+      animate(".content", {
+        height: {
+          to: "75%",
+          duration: `400`,
+          ease: easings.spring({ mass: 1 }),
+        },
+      });
+    } else {
+      animate(".getStarted", {
+        width: {
+          from: "100%",
+          to: `${buttonWidth}px`,
+          duration: 1200,
+          ease: easings.spring({ mass: 1 }),
+        },
+        borderRadius: {
+          to: "5px",
+          duration: 200,
+        },
+      });
+
+      animate(".content", {
+        height: {
+          from: "75%",
+          to: `${contentHeight}px`,
+          duration: 1200,
+          ease: easings.spring({ mass: 1 }),
+        },
+      });
+    }
   };
 
   return (

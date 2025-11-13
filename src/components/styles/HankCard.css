@@ -79,7 +79,7 @@ nav {
 
 button {
   display: flex;
-  width: max-content;
+  width: 180px;
   font-size: 1rem;
   align-items: center;
   justify-content: center;
