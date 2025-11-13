@@ -1,5 +1,5 @@
 // App.tsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import "./App.css";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -7,11 +7,13 @@ import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
 import MouseEffect from "./components/MouseEffect";
+import { set } from "animejs";
 
 function App() {
   // Canvas + UI refs for the 3-layer stack
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  let scatter = false;
 
   useEffect(() => {
     // ---------------------------- Shared Camera ----------------------------
@@ -526,7 +528,9 @@ float bayerDither(vec2 pos) {
         typeof player !== "undefined" &&
         (mouseTarget.x || mouseTarget.y || mouseTarget.z)
       ) {
-        v1.copy(mouseTarget).sub(player.position);
+        v1.copy(scatter ? new THREE.Vector3(-10, 0, 30) : mouseTarget).sub(
+          player.position
+        );
         const dist = v1.length();
 
         if (dist > 1e-3) {
@@ -583,21 +587,24 @@ float bayerDither(vec2 pos) {
         ).multiplyScalar(WANDER_STRENGTH);
 
         let avoidanceFactor = 0;
+
         const targetPoint = v1
-          .copy(FIXED_TARGET)
+          .copy(scatter ? new THREE.Vector3(30, 0, 10) : FIXED_TARGET)
           .add(followerOffsets[i])
           .add(v2);
 
         if (player) {
           const toPlayer = v3.copy(f.position).sub(player.position);
           const distToPlayer = toPlayer.length();
-          if (distToPlayer > 1e-5 && distToPlayer < PLAYER_AVOID_RADIUS) {
-            const falloff = 1 - distToPlayer / PLAYER_AVOID_RADIUS;
+          const radius = scatter ? 100 : PLAYER_AVOID_RADIUS;
+          if (distToPlayer > 1e-5 && distToPlayer < radius) {
+            const falloff = 1 - distToPlayer / radius;
             avoidanceFactor = THREE.MathUtils.clamp(
               Math.pow(falloff, 2.2),
               0,
               1
             );
+
             const scaledAvoid =
               PLAYER_AVOID_STRENGTH * avoidanceFactor * avoidanceFactor;
             targetPoint.addScaledVector(
@@ -693,6 +700,9 @@ float bayerDither(vec2 pos) {
   }, []);
 
   // ---------------------------- Render JSX ----------------------------
+  const scatterDaFish = (shouldScatter: boolean) => {
+    scatter = shouldScatter;
+  };
 
   return (
     <div
@@ -717,7 +727,7 @@ float bayerDither(vec2 pos) {
       />
 
       {/* UI layer (middle) */}
-      <HankCard />
+      <HankCard scatterCallback={scatterDaFish} />
 
       {/* Foreground scene (fish OVER ui) */}
       <canvas

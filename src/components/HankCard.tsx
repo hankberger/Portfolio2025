@@ -2,7 +2,12 @@ import React, { useEffect, useRef } from "react";
 import "./styles/HankCard.css";
 import { animate, stagger, splitText, spring, easings, svg } from "animejs";
 
-export default function HankCard() {
+interface IHankCard {
+  scatterCallback: (shouldScatter: boolean) => void;
+}
+
+export default function HankCard(props: IHankCard) {
+  const scatterCallback = props.scatterCallback;
   const navbarRef = useRef<HTMLElement>(null);
   const chevronPathRef = useRef<SVGPathElement>(null); // <— path we morph
 
@@ -95,6 +100,8 @@ export default function HankCard() {
         ease: easings.spring({ mass: 1 }),
       },
     });
+
+    scatterCallback(true);
   };
 
   return (
