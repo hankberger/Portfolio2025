@@ -3,14 +3,18 @@
   flex-direction: column;
   align-items: left;
   width: auto;
-  position: absolute;
-  top: 50%;
-  left: 25%;
-  padding: 10px;
-  transform: translate(-50%, -50%);
+  position: relative;
+  left: 10%;
+  height: min-content;
+  justify-content: center;
   /* background-color: white; */
   border-radius: 10px;
   /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 2px rgba(0, 0, 0, 0.04); */
+}
+
+.big {
+  height: 100%;
+  width: calc(80% - 4.5rem);
 }
 
 h1 {
@@ -32,6 +36,21 @@ h2 {
   margin: 0px;
   font-size: 2.25rem;
   margin-top: -25px;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.constraint {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: left;
+  align-items: center;
 }
 
 .HankImage {
@@ -74,6 +93,7 @@ button {
   padding: 10px 10px 10px 20px;
   cursor: pointer;
   gap: 2px;
+  height: 100%;
 }
 
 .chevron {
@@ -132,9 +152,10 @@ nav svg {
   display: flex;
   flex-direction: column;
   justify-content: left;
-  width: max-content;
   margin-left: 4.5rem;
   gap: 10px;
+  width: calc(100% - 4.5rem);
+  height: min-content;
 }
 
 a {

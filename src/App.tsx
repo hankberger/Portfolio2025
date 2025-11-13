@@ -396,7 +396,9 @@ float bayerDither(vec2 pos) {
           });
 
           fishes.push(fish);
-          //fgScene.add(fish);
+
+          //fishy
+          fgScene.add(fish);
 
           followerSpeeds.push(
             THREE.MathUtils.randFloat(MIN_FOLLOW_SPEED, MAX_FOLLOW_SPEED)
