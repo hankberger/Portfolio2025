@@ -1,5 +1,24 @@
 .AboutMeContent {
-  height: 100px;
-  width: 100px;
-  border: 1px solid red;
+  height: min-content;
+  width: 100%;
+}
+
+.menu {
+  display: flex;
+  justify-content: space-between;
+}
+
+.backButton {
+  display: flex;
+  height: min-content;
+  width: max-content;
+  justify-content: flex-start;
+  border: none;
+  align-items: center !important;
+  margin-left: -1rem;
+  cursor: pointer;
+}
+
+.backButton svg {
+  width: 1rem;
 }

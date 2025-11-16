@@ -4,10 +4,11 @@ import AboutMeContent from "./AboutMeContent";
 
 interface IButtonProps {
   bigButton: boolean;
+  closeCallback: () => void;
 }
 
 export default function ButtonContent(props: IButtonProps) {
-  const { bigButton } = props;
+  const { bigButton, closeCallback } = props;
 
   useEffect(() => {
     animate(".introButtonContent", {
@@ -51,7 +52,7 @@ export default function ButtonContent(props: IButtonProps) {
           </svg>
         </div>
       ) : (
-        <AboutMeContent />
+        <AboutMeContent closeCallback={closeCallback} />
       )}
     </>
   );

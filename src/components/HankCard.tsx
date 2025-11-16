@@ -20,6 +20,7 @@ export default function HankCard(props: IHankCard) {
   let contentHeight = 48;
   let buttonWidth = 178;
   const [bigButton, setBigButton] = useState(false);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const { chars } = splitText("h1", { words: false, chars: true });
@@ -75,7 +76,22 @@ export default function HankCard(props: IHankCard) {
       },
       y: [{ from: ".5rem", to: "0rem", delay: 800 }],
     } as any);
+
+    const el = buttonRef.current;
+    if (!el) return;
+
+    el.addEventListener("click", toggle);
+    el.addEventListener("keydown", keyHandler);
+
+    return () => {
+      el.removeEventListener("click", toggle);
+      el.removeEventListener("keydown", keyHandler);
+    };
   }, []);
+
+  const keyHandler = (e: KeyboardEvent) => {
+    if (e.key === "Enter") toggle();
+  };
 
   const toggle = () => {
     const hankcard = document.getElementsByClassName("HankCard")[0];
@@ -88,6 +104,9 @@ export default function HankCard(props: IHankCard) {
     console.log(bigButton);
 
     if (gettinBigger) {
+      buttonRef.current?.removeEventListener("click", toggle);
+      buttonRef.current?.removeEventListener("keydown", keyHandler);
+
       contentHeight =
         contentHeight == 0
           ? document.getElementsByClassName("content")[0].clientHeight
@@ -120,6 +139,8 @@ export default function HankCard(props: IHankCard) {
         },
       });
     } else {
+      buttonRef.current?.addEventListener("click", toggle);
+      buttonRef.current?.addEventListener("keydown", keyHandler);
       animate(".getStarted", {
         width: {
           from: "100%",
@@ -157,9 +178,14 @@ export default function HankCard(props: IHankCard) {
           </div>
 
           <div className="content">
-            <button onClick={toggle} className={`getStarted`}>
-              <ButtonContent bigButton={bigButton} />
-            </button>
+            <div
+              ref={buttonRef}
+              role="button"
+              tabIndex={0}
+              className={`getStarted`}
+            >
+              <ButtonContent bigButton={bigButton} closeCallback={toggle} />
+            </div>
           </div>
         </div>
       </div>

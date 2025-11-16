@@ -173,8 +173,27 @@ a {
   gap: 5px;
 }
 
-.big button {
-  pointer-events: none; /* can't be clicked */
-  user-select: none; /* can't select text */
+.big .getStarted {
   outline: none !important; /* no focus ring */
+  align-items: flex-start;
+  cursor: cell;
+}
+
+.getStarted {
+  display: flex;
+  width: 180px;
+  font-size: 1rem;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: 1px solid white;
+  border-radius: 5px;
+  color: white;
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  padding: 10px 10px 10px 20px;
+  cursor: pointer;
+  gap: 2px;
+  height: 100%;
 }
