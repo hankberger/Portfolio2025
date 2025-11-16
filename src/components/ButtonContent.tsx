@@ -1,5 +1,6 @@
 import { animate, easings } from "animejs";
 import { useEffect } from "react";
+import AboutMeContent from "./AboutMeContent";
 
 interface IButtonProps {
   bigButton: boolean;
@@ -33,7 +34,7 @@ export default function ButtonContent(props: IButtonProps) {
 
   return (
     <>
-      {!bigButton && (
+      {!bigButton ? (
         <div className="introButtonContent">
           Get Started
           <svg
@@ -49,6 +50,8 @@ export default function ButtonContent(props: IButtonProps) {
             />
           </svg>
         </div>
+      ) : (
+        <AboutMeContent />
       )}
     </>
   );

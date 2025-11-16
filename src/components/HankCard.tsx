@@ -157,7 +157,7 @@ export default function HankCard(props: IHankCard) {
           </div>
 
           <div className="content">
-            <button onClick={toggle} className="getStarted">
+            <button onClick={toggle} className={`getStarted`}>
               <ButtonContent bigButton={bigButton} />
             </button>
           </div>

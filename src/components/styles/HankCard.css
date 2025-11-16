@@ -172,3 +172,9 @@ a {
   align-items: center;
   gap: 5px;
 }
+
+.big button {
+  pointer-events: none; /* can't be clicked */
+  user-select: none; /* can't select text */
+  outline: none !important; /* no focus ring */
+}
