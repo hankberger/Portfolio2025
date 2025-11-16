@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import "./styles/AboutMeContent.css";
+import { animate, easings, stagger } from "animejs";
 
 interface IAboutMeContent {
   closeCallback: () => void;
@@ -6,6 +8,28 @@ interface IAboutMeContent {
 
 export default function AboutMeContent(props: IAboutMeContent) {
   const { closeCallback } = props;
+
+  useEffect(() => {
+    animate(".frame", {
+      width: {
+        to: "100px",
+        duration: 1200,
+        delay: stagger(100, { start: 100 }),
+        ease: easings.eases.outCirc,
+      },
+      height: {
+        to: "100px",
+        duration: 1200,
+        delay: stagger(100, { start: 100 }),
+        ease: easings.eases.outCirc,
+      },
+      opacity: {
+        from: 0,
+        to: 1,
+        duration: 400,
+      },
+    });
+  }, []);
 
   return (
     <div className="AboutMeContent">
@@ -20,6 +44,25 @@ export default function AboutMeContent(props: IAboutMeContent) {
           </svg>
           Back to the fish
         </button>
+      </div>
+      <div className="restOfDaCard row">
+        <div className="gallery">
+          {/* <div className="frame"></div>
+          <div className="frame"></div>
+          <div className="frame"></div>
+          <div className="frame"></div> */}
+        </div>
+
+        <div className="realStuff">
+          <div className="section">
+            <h3>Welcome</h3>
+            <div>Hey! I'm Hank. I'm a web, mobile, and animation expert.</div>
+          </div>
+          <div className="section">
+            <h3>Welcome</h3>
+            <div>Hey! I'm Hank. I'm a web, mobile, and animation expert.</div>
+          </div>
+        </div>
       </div>
     </div>
   );

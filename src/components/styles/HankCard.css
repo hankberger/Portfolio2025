@@ -177,6 +177,8 @@ a {
   outline: none !important; /* no focus ring */
   align-items: flex-start;
   cursor: cell;
+  padding-right: 20px;
+  padding-bottom: 20px;
 }
 
 .getStarted {
