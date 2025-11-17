@@ -7,14 +7,16 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
-const distDir = path.resolve(__dirname, "dist");
 
-app.use(express.static(distDir));
+// Vite dist is OUTSIDE build-server, so go up one directory
+const clientDist = path.resolve(__dirname, "../dist");
 
-app.get("*", (_request, response) => {
-  response.sendFile(path.join(distDir, "index.html"));
+app.use(express.static(clientDist));
+
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(clientDist, "index.html"));
 });
 
 app.listen(port, () => {
-  console.log(`Serving dist from ${distDir} on http://localhost:${port}`);
+  console.log(`Serving dist from ${clientDist} on http://localhost:${port}`);
 });
