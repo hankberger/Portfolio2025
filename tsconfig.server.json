@@ -1,0 +1,11 @@
+﻿{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noEmit": false,
+    "outDir": "./build-server"
+  },
+  "include": ["server.ts"]
+}
