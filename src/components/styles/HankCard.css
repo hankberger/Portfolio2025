@@ -160,8 +160,7 @@ nav svg {
   justify-content: left;
   margin-left: 4.5rem;
   gap: 10px;
-  width: calc(100% - 4.5rem);
-  height: min-content;
+  width: 100%;
 }
 
 a {
@@ -176,9 +175,8 @@ a {
 .big .getStarted {
   outline: none !important; /* no focus ring */
   align-items: flex-start;
-  cursor: cell;
-  padding-right: 20px;
-  padding-bottom: 20px;
+  padding: 0px;
+  cursor: default;
 }
 
 .getStarted {
@@ -198,4 +196,38 @@ a {
   cursor: pointer;
   gap: 2px;
   height: 100%;
+}
+
+@media screen and (orientation: portrait) {
+  .constraint {
+    padding: 10px;
+  }
+
+  h2 {
+    margin-top: -10px;
+  }
+
+  .HankCard {
+    left: 0px;
+    width: 100%;
+  }
+
+  .big .content {
+    margin-left: 0px;
+  }
+
+  .getStarted {
+    will-change: transform;
+    font-size: 1.5rem;
+  }
+
+  .chevron {
+    height: 2rem;
+    width: 30px;
+    margin-top: 3px;
+  }
+
+  .big .betStarted {
+    width: 100%;
+  }
 }

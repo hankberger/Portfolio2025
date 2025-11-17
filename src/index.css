@@ -6,6 +6,13 @@ body {
   font-size: 20px;
 }
 
+@media screen and (orientation: portrait) {
+  html,
+  body {
+    font-size: 10px;
+  }
+}
+
 #root {
   height: 100%;
 }
@@ -18,4 +25,9 @@ body {
 .column {
   display: flex;
   flex-direction: column;
+}
+
+main {
+  display: flex;
+  justify-content: center;
 }
