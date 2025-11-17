@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import "./styles/AboutMeContent.css";
-import { animate, createDraggable, easings, stagger } from "animejs";
+import { animate, easings, stagger } from "animejs";
 
 interface IAboutMeContent {
   closeCallback: () => void;

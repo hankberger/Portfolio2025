@@ -1,13 +1,11 @@
 // App.tsx
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import "./App.css";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+//import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
-import MouseEffect from "./components/MouseEffect";
-import { set } from "animejs";
 
 function App() {
   // Canvas + UI refs for the 3-layer stack

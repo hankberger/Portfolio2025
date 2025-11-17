@@ -1,14 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./styles/HankCard.css";
-import {
-  animate,
-  stagger,
-  splitText,
-  spring,
-  easings,
-  svg,
-  get,
-} from "animejs";
+import { animate, stagger, splitText, easings } from "animejs";
 import ButtonContent from "./ButtonContent";
 
 interface IHankCard {
@@ -64,7 +56,7 @@ export default function HankCard(props: IHankCard) {
   }, []);
 
   useEffect(() => {
-    const path = document.querySelector(".chevron .yeet") as SVGPathElement;
+    //const path = document.querySelector(".chevron .yeet") as SVGPathElement;
 
     animate(".getStarted", {
       opacity: {

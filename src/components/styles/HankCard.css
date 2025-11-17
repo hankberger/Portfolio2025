@@ -114,9 +114,6 @@ button {
   gap: 2px;
 }
 
-nav button:hover {
-}
-
 nav button img {
   height: 1rem;
   fill: white;
