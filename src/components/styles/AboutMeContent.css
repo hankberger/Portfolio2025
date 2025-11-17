@@ -107,6 +107,7 @@ h3 {
   flex-direction: column;
   align-items: center;
   text-align: center;
+  flex-basis: 50%;
 }
 
 .intro a {
@@ -124,10 +125,10 @@ a svg {
   height: 100%;
   width: 100%;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 20px;
+  flex-basis: 50%;
 }
 
 .skillSection {
@@ -136,13 +137,15 @@ a svg {
   flex-wrap: wrap; /* allow wrapping */
   gap: 1rem; /* optional spacing */
   width: 100%;
+  margin-top: 25px;
 }
 
 .skill {
   flex: 0 0 45%; /* 35% width, and allowed to shrink */
   padding: 5px;
   border: 1px solid white;
-  font-weight: 300;
+  font-weight: 500;
+  font-size: 1.1rem;
   border-radius: 5px;
   font-style: bold;
   display: flex;
@@ -167,6 +170,14 @@ a svg {
 
 .logoEntry svg {
   height: 1.5rem;
+}
+
+.introGraphic {
+  flex-basis: 50%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 @media screen and (orientation: portrait) {
