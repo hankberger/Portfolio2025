@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import "./App.css";
-//import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
@@ -12,6 +12,7 @@ function App() {
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   let scatter = false;
+  let debug = false;
 
   useEffect(() => {
     // ---------------------------- Shared Camera ----------------------------
@@ -51,6 +52,15 @@ function App() {
     fgRenderer.setClearColor(0x000000, 0.0); // fully transparent
 
     const fgScene = new THREE.Scene();
+
+    const controls = new OrbitControls(camera, bgRenderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.enableZoom = true;
+    controls.target.set(-4, 0, 0);
+    //controls.update();
+    controls.enabled = false;
 
     // ---------------------------- Lights ----------------------------
     // We apply lights to BOTH scenes as needed. Since we're actually drawing the fish in fgScene
@@ -458,6 +468,13 @@ float bayerDither(vec2 pos) {
       );
     }
 
+    const helper1 = new THREE.PlaneHelper(groundPlane, 100, 0x00ff00);
+    const helper2 = new THREE.PlaneHelper(verticalPlane, 100, 0xff0000);
+    const chosenMarker = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2),
+      new THREE.MeshBasicMaterial({ color: 0xff0000 })
+    );
+
     const mouseTarget = new THREE.Vector3();
     const hitGround = new THREE.Vector3();
     const hitVertical = new THREE.Vector3();
@@ -489,6 +506,7 @@ float bayerDither(vec2 pos) {
       } else if (gotVertical) {
         mouseTarget.copy(hitVertical);
       }
+      chosenMarker.position.copy(mouseTarget);
     }
 
     bgCanvasRef.current!.addEventListener("mousemove", onMouseMove);
@@ -501,10 +519,10 @@ float bayerDither(vec2 pos) {
     const qTarget = new THREE.Quaternion();
     const m4 = new THREE.Matrix4();
 
-    const TURN_LEADER = 0.008;
-    const SPEED_LEADER = 7.0;
-    const ARRIVE_RADIUS = 4.0;
-    const TURN_FOLLOW = 0.0025;
+    const TURN_LEADER = 0.03;
+    const SPEED_LEADER = 6.5;
+    const ARRIVE_RADIUS = 5.0;
+    const TURN_FOLLOW = 0.01;
     const FOLLOW_UP = new THREE.Vector3(0, 1, 0);
     const FIXED_TARGET = new THREE.Vector3(0, 0, 0);
 
@@ -666,6 +684,10 @@ float bayerDither(vec2 pos) {
         f.position.addScaledVector(forward, followerSpeeds[i] * dt);
       }
 
+      if (debug) {
+        controls.update();
+      }
+
       // pass 1: background
       bgRenderer.render(bgScene, camera);
       // DOM layer sits visually above that
@@ -690,10 +712,36 @@ float bayerDither(vec2 pos) {
     }
     window.addEventListener("resize", handleResize);
 
+    function toggleDebug() {
+      debug = !debug;
+
+      if (debug) {
+        fgScene.add(helper1);
+        fgScene.add(helper2);
+        fgScene.add(chosenMarker);
+        camera.position.set(-4, 2, 13);
+        camera.rotateX(-Math.PI / 16);
+        controls.enabled = true;
+      } else {
+        fgScene.remove(helper1);
+        fgScene.remove(helper2);
+        fgScene.remove(chosenMarker);
+        camera.position.set(-4, 2, 13);
+        camera.rotation.set(-Math.PI / 16, 0, 0);
+        controls.enabled = false;
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "d") toggleDebug();
+    });
+
     // ---------------------------- Cleanup ----------------------------
     return () => {
       running = false;
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("keydown", toggleDebug);
+
       if (bgCanvasRef.current)
         bgCanvasRef.current.removeEventListener("mousemove", onMouseMove);
 
