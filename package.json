@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "serve:dist": "tsx --tsconfig tsconfig.server.json server.ts",
+    "build:client": "tsc -b && vite build",
     "build:server": "tsc --project tsconfig.server.json",
+    "build": "npm run build:client && npm run build:server",
     "start:prod": "npm run build && npm run build:server && node build-server/server.js"
   },
   "dependencies": {
