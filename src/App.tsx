@@ -28,18 +28,6 @@ function App() {
     console.log(camera, camera.position, camera.rotation);
 
     // ---------------------------- Background Renderer / Scene ----------------------------
-    const bgRenderer = new THREE.WebGLRenderer({
-      canvas: bgCanvasRef.current!,
-      antialias: true,
-      alpha: false, // solid background
-    });
-    bgRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    bgRenderer.setSize(window.innerWidth, window.innerHeight);
-    bgRenderer.outputColorSpace = THREE.SRGBColorSpace;
-    bgRenderer.setClearColor(0x0147ff, 1.0); // same blue you had
-
-    const bgScene = new THREE.Scene();
-    // bgScene.background = new THREE.Color(0x0147ff); // clearColor already covers
 
     // ---------------------------- Foreground Renderer / Scene ----------------------------
     const fgRenderer = new THREE.WebGLRenderer({
@@ -684,7 +672,6 @@ float bayerDither(vec2 pos) {
       }
 
       // pass 1: background
-      bgRenderer.render(bgScene, camera);
       // DOM layer sits visually above that
 
       // pass 2: foreground (fish over DOM)
@@ -702,7 +689,6 @@ float bayerDither(vec2 pos) {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
 
-      bgRenderer.setSize(w, h);
       fgRenderer.setSize(w, h);
     }
     window.addEventListener("resize", handleResize);
@@ -754,7 +740,6 @@ float bayerDither(vec2 pos) {
       if (bgCanvasRef.current)
         bgCanvasRef.current.removeEventListener("mousemove", onMouseMove);
 
-      bgRenderer.dispose();
       fgRenderer.dispose();
     };
   }, []);
