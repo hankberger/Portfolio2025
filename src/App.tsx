@@ -23,7 +23,9 @@ function App() {
       1000
     );
     camera.position.set(-4, 2, 13);
-    camera.rotateX(-Math.PI / 16);
+    camera.rotation.set(-Math.PI / 16, 0, 0);
+
+    console.log(camera, camera.position, camera.rotation);
 
     // ---------------------------- Background Renderer / Scene ----------------------------
     const bgRenderer = new THREE.WebGLRenderer({
@@ -53,14 +55,7 @@ function App() {
 
     const fgScene = new THREE.Scene();
 
-    const controls = new OrbitControls(camera, bgRenderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.enablePan = false;
-    controls.enableZoom = true;
-    controls.target.set(-4, 0, 0);
-    //controls.update();
-    controls.enabled = false;
+    let controls: any = undefined;
 
     // ---------------------------- Lights ----------------------------
     // We apply lights to BOTH scenes as needed. Since we're actually drawing the fish in fgScene
@@ -720,8 +715,21 @@ float bayerDither(vec2 pos) {
         fgScene.add(helper2);
         fgScene.add(chosenMarker);
         camera.position.set(-4, 2, 13);
-        camera.rotateX(-Math.PI / 16);
-        controls.enabled = true;
+        camera.rotation.set(-Math.PI / 16, 0, 0);
+
+        if (controls == undefined) {
+          controls = new OrbitControls(camera, fgCanvasRef.current!);
+          controls.enableDamping = true;
+          controls.dampingFactor = 0.08;
+          controls.enablePan = false;
+          controls.enableZoom = true;
+          controls.target.set(-4, 0, 0);
+          controls.enabled = true;
+        } else {
+          controls.update();
+        }
+
+        console.log(camera, camera.position, camera.rotation);
       } else {
         fgScene.remove(helper1);
         fgScene.remove(helper2);
@@ -729,6 +737,7 @@ float bayerDither(vec2 pos) {
         camera.position.set(-4, 2, 13);
         camera.rotation.set(-Math.PI / 16, 0, 0);
         controls.enabled = false;
+        console.log(camera, camera.position, camera.rotation);
       }
     }
 
