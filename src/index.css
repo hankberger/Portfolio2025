@@ -9,6 +9,13 @@ body {
 @media screen and (orientation: portrait) {
   html,
   body {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  html,
+  body {
     font-size: 10px;
   }
 }
