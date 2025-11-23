@@ -48,7 +48,9 @@ export default function AboutMeContent(props: IAboutMeContent) {
       <div className="restOfDaCard row">
         <div className="realStuff">
           <div className="section firstSection">
-            <div className="introGraphic">TODO: Add a graphic here.</div>
+            <div className="introGraphic">
+              <video src="test.webm" autoPlay loop muted></video>
+            </div>
             <div className="intro">
               <h3>Welcome</h3>
               <a>
