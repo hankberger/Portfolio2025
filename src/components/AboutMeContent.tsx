@@ -49,7 +49,7 @@ export default function AboutMeContent(props: IAboutMeContent) {
         <div className="realStuff">
           <div className="section firstSection">
             <div className="introGraphic">
-              <video src="test.webm" autoPlay loop muted></video>
+              <video src="test.webm" autoPlay muted></video>
             </div>
             <div className="intro">
               <h3>Welcome</h3>

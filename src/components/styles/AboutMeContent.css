@@ -178,6 +178,20 @@ a svg {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  overflow: hidden;
+  width: 500px; /* whatever you want */
+  height: 720px; /* or use aspect-ratio */
+}
+
+video {
+  border: none;
+  position: absolute;
+  inset: 0;
+  width: 102%;
+  height: 102%;
+  transform: translate(-1%, -1%); /* push it out a hair */
+  object-fit: cover;
 }
 
 @media screen and (orientation: portrait) {
