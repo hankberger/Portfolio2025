@@ -103,11 +103,12 @@ h3 {
 
 .intro {
   display: flex;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  flex-basis: 50%;
+  flex-basis: auto;
+  margin-bottom: 25px;
+  flex-basis: 25%;
 }
 
 .intro a {
@@ -125,10 +126,14 @@ a svg {
   height: 100%;
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
   gap: 20px;
-  flex-basis: 50%;
+}
+
+.firstSection {
+  flex-direction: column;
+  justify-content: center;
 }
 
 .skillSection {
@@ -173,14 +178,15 @@ a svg {
 }
 
 .introGraphic {
-  flex-basis: 50%;
+  flex-basis: 40%;
   height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
   overflow: hidden;
-  width: 500px; /* whatever you want */
-  height: 720px; /* or use aspect-ratio */
+  flex-grow: 1;
+  width: auto; /* whatever you want */
+  height: auto; /* or use aspect-ratio */
 }
 
 video {
@@ -188,7 +194,7 @@ video {
   inset: 0;
   width: 102%;
   height: 102%;
-  max-height: 500px;
+  max-height: 600px;
   transform: translate(-1%, -1%); /* push it out a hair */
 }
 
