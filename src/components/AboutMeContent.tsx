@@ -51,12 +51,24 @@ export default function AboutMeContent(props: IAboutMeContent) {
           <div className="section firstSection">
             <div className="introGraphic">
               {introVideoDone ? (
-                <video src="test.webm" autoPlay muted loop></video>
+                <video
+                  src="test.webm"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  webkit-playsinline
+                ></video>
               ) : (
                 <video
                   src="first.webm"
                   autoPlay
                   muted
+                  playsInline
+                  preload="auto"
+                  loop={false}
+                  webkit-playsinline
                   onEnded={() => {
                     setIntroVideoDone(true);
                   }}
