@@ -60,30 +60,27 @@ export default function AboutMeContent(props: IAboutMeContent) {
         <div className="realStuff">
           <div className="section firstSection">
             <div className="introGraphic">
-              {introVideoDone ? (
-                <video
-                  src={loopSrc}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="auto"
-                  // @ts-ignore
-                  webkit-playsinline="true"
-                />
-              ) : (
-                <video
-                  src={introSrc}
-                  autoPlay
-                  muted
-                  playsInline
-                  preload="auto"
-                  loop={false}
-                  // @ts-ignore
-                  webkit-playsinline="true"
-                  onEnded={() => setIntroVideoDone(true)}
-                />
-              )}
+              <video
+                src={loopSrc}
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ opacity: introVideoDone ? 1 : 0 }}
+                // @ts-ignore
+                webkit-playsinline="true"
+              />
+              <video
+                src={introSrc}
+                autoPlay
+                muted
+                playsInline
+                loop={false}
+                onEnded={() => setIntroVideoDone(true)}
+                style={{ opacity: introVideoDone ? 0 : 1 }}
+                // @ts-ignore
+                webkit-playsinline="true"
+              />
             </div>
             <div className="intro">
               <h3>Welcome</h3>

@@ -178,22 +178,39 @@ a svg {
 }
 
 .introGraphic {
-  height: 600px;
-  width: 600px;
+  position: relative; /* REQUIRED for no-shift layering */
+  height: 100%;
+  width: 100%;
+
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  overflow: hidden;
+
+  overflow: hidden; /* keep this */
   flex-grow: 1;
+
+  /* Mobile Safari: prevent viewport-height shifting issues */
+  max-height: 600px;
+  max-width: 600px;
+
+  margin-top: 50px;
 }
 
-video {
-  border: none;
-  inset: 0;
+/* Both videos stay mounted, layered, never reflow */
+.introGraphic video {
+  position: absolute; /* IMPORTANT */
+  top: 0; /* lock both videos identically */
+  left: 0;
+
+  /* eliminate the mobile shuffle by overscanning slightly */
   width: 102%;
   height: 102%;
-  max-height: 600px;
-  transform: translate(-1%, -1%); /* push it out a hair */
+  transform: translate(-1%, -1%);
+
+  border: none;
+  pointer-events: none; /* avoids accidental fullscreen triggers */
+  will-change: opacity, transform;
+  transform: translateZ(0) translate(-1%, -1%);
 }
 
 @media screen and (orientation: portrait) {
