@@ -178,15 +178,13 @@ a svg {
 }
 
 .introGraphic {
-  flex-basis: 40%;
-  height: 100%;
+  height: 600px;
+  width: 600px;
   display: flex;
   justify-content: center;
   align-items: flex-end;
   overflow: hidden;
   flex-grow: 1;
-  width: auto; /* whatever you want */
-  height: auto; /* or use aspect-ratio */
 }
 
 video {

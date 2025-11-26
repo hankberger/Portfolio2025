@@ -32,6 +32,16 @@ export default function AboutMeContent(props: IAboutMeContent) {
     });
   }, []);
 
+  function isSafari() {
+    if (typeof navigator === "undefined") return false;
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  }
+
+  const safari = isSafari();
+
+  const introSrc = safari ? "first.mov" : "first.webm";
+  const loopSrc = safari ? "test.mov" : "test.webm";
+
   return (
     <div className="AboutMeContent">
       <div className="menu">
@@ -52,27 +62,27 @@ export default function AboutMeContent(props: IAboutMeContent) {
             <div className="introGraphic">
               {introVideoDone ? (
                 <video
-                  src="test.webm"
+                  src={loopSrc}
                   autoPlay
                   muted
                   loop
                   playsInline
                   preload="auto"
-                  webkit-playsinline
-                ></video>
+                  // @ts-ignore
+                  webkit-playsinline="true"
+                />
               ) : (
                 <video
-                  src="first.webm"
+                  src={introSrc}
                   autoPlay
                   muted
                   playsInline
                   preload="auto"
                   loop={false}
-                  webkit-playsinline
-                  onEnded={() => {
-                    setIntroVideoDone(true);
-                  }}
-                ></video>
+                  // @ts-ignore
+                  webkit-playsinline="true"
+                  onEnded={() => setIntroVideoDone(true)}
+                />
               )}
             </div>
             <div className="intro">

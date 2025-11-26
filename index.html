@@ -65,8 +65,30 @@
       rel="stylesheet"
     />
 
-    <link rel="preload" href="test.webm" as="video" type="video/webm" />
-<link rel="preload" href="first.webm" as="video" type="video/webm" />
+
+<script>
+  const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  // Pick the correct file (Chrome = webm)
+  const sources = [
+    "/first.webm",
+    "/test.webm"
+  ];
+
+  sources.forEach(src => {
+    const v = document.createElement("video");
+    v.src = src;
+    v.muted = true;
+    v.preload = "auto";
+    v.playsInline = true;
+    v.style.display = "none";
+
+    // force an early decode warmup
+    v.play().then(() => v.pause()).catch(() => {});
+
+    document.head.appendChild(v);
+  });
+</script>
 
 
     <!-- Structured Data (JSON-LD) -->
