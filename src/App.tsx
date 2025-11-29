@@ -462,15 +462,26 @@ float bayerDither(vec2 pos) {
     const hitGround = new THREE.Vector3();
     const hitVertical = new THREE.Vector3();
 
-    function ndcFromEvent(e: MouseEvent) {
-      // We attach pointer events to the BACKGROUND canvas,
-      // since the FOREGROUND canvas has pointer-events:none.
+    function ndcFromEvent(e: MouseEvent | TouchEvent) {
       const rect = bgCanvasRef.current!.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      let clientX: number;
+      let clientY: number;
+
+      if (e instanceof TouchEvent) {
+        // use the first touch point
+        const t = e.touches[0] || e.changedTouches[0];
+        clientX = t.clientX;
+        clientY = t.clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     }
 
-    function onMouseMove(e: MouseEvent) {
+    function onPointerMove(e: MouseEvent | TouchEvent) {
       ndcFromEvent(e);
       raycaster.setFromCamera(mouse, camera);
 
@@ -489,10 +500,9 @@ float bayerDither(vec2 pos) {
       } else if (gotVertical) {
         mouseTarget.copy(hitVertical);
       }
+
       chosenMarker.position.copy(mouseTarget);
     }
-
-    bgCanvasRef.current!.addEventListener("mousemove", onMouseMove);
 
     // temps / tunables reused from your single-scene version
     const v1 = new THREE.Vector3();
@@ -731,14 +741,23 @@ float bayerDither(vec2 pos) {
       if (e.key === "d") toggleDebug();
     });
 
+    bgCanvasRef.current!.addEventListener("mousemove", onPointerMove);
+    bgCanvasRef.current!.addEventListener("touchmove", onPointerMove, {
+      passive: true, // important for mobile perf
+    });
+
     // ---------------------------- Cleanup ----------------------------
     return () => {
       running = false;
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("keydown", toggleDebug);
 
-      if (bgCanvasRef.current)
-        bgCanvasRef.current.removeEventListener("mousemove", onMouseMove);
+      if (bgCanvasRef.current) {
+        if (bgCanvasRef.current) {
+          bgCanvasRef.current.removeEventListener("mousemove", onPointerMove);
+          bgCanvasRef.current.removeEventListener("touchmove", onPointerMove);
+        }
+      }
 
       fgRenderer.dispose();
     };
