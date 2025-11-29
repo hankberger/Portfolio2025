@@ -198,6 +198,8 @@ a {
 @media screen and (orientation: portrait) {
   .constraint {
     padding: 10px;
+    display: flex;
+    align-items: flex-end;
   }
 
   h2 {
@@ -207,6 +209,28 @@ a {
   .HankCard {
     left: 0px;
     width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+    margin: 15px 0px;
+    gap: 15px;
+    min-height: 100%;
+    max-height: max-content;
+  }
+
+  .title {
+    margin-top: 2ch;
+  }
+
+  .content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 0px;
+    height: max-content;
   }
 
   .big .content {
@@ -216,11 +240,13 @@ a {
   .getStarted {
     will-change: transform;
     font-size: 1.5rem;
+    pointer-events: all;
+    margin-bottom: 25px;
   }
 
   .chevron {
     height: 2rem;
-    width: 30px;
+    width: 35px;
     margin-top: 3px;
   }
 

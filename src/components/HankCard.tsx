@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./styles/HankCard.css";
 import { animate, stagger, splitText, easings } from "animejs";
 import ButtonContent from "./ButtonContent";
+import { isPortrait } from "../util/isPortrait";
 
 interface IHankCard {
   scatterCallback: (shouldScatter: boolean) => void;
@@ -114,7 +115,9 @@ export default function HankCard(props: IHankCard) {
         width: {
           to: "100%",
           duration: 400,
-          ease: easings.spring({ mass: 1 }),
+          ease: isPortrait()
+            ? easings.spring({ mass: 0.25 })
+            : easings.spring({ mass: 1 }),
         },
         borderRadius: {
           from: "5px",
@@ -125,9 +128,11 @@ export default function HankCard(props: IHankCard) {
 
       animate(".content", {
         height: {
-          to: "75%",
+          to: isPortrait() ? "95%" : "75%",
           duration: `400`,
-          ease: easings.spring({ mass: 1 }),
+          ease: isPortrait()
+            ? easings.spring({ mass: 2 })
+            : easings.spring({ mass: 1 }),
         },
       });
     } else {
