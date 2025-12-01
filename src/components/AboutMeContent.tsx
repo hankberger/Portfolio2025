@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./styles/AboutMeContent.css";
 import { animate, easings, stagger } from "animejs";
 import ExperienceSection from "./ExperienceSection";
+import Showcase from "./Showcase";
 
 interface IAboutMeContent {
   closeCallback: () => void;
@@ -104,6 +105,9 @@ export default function AboutMeContent(props: IAboutMeContent) {
           </div>
           <div className="section">
             <ExperienceSection />
+          </div>
+          <div className="section">
+            <Showcase />
           </div>
         </div>
       </div>

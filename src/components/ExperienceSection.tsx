@@ -1,6 +1,4 @@
-import { useEffect } from "react";
 import "./styles/ExperienceSection.css";
-import { animate, easings, stagger } from "animejs";
 
 export default function ExperienceSection() {
   return (
