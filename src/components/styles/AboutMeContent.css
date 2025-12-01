@@ -142,7 +142,6 @@ a svg {
   flex-wrap: wrap; /* allow wrapping */
   gap: 1rem; /* optional spacing */
   width: 100%;
-  margin-top: 25px;
 }
 
 .skill {
