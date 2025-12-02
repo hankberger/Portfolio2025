@@ -115,9 +115,7 @@ export default function HankCard(props: IHankCard) {
         width: {
           to: "100%",
           duration: 400,
-          ease: isPortrait()
-            ? easings.spring({ mass: 0.25 })
-            : easings.spring({ mass: 1 }),
+          ease: easings.spring({ mass: 1 }),
         },
         borderRadius: {
           from: "5px",
@@ -128,11 +126,9 @@ export default function HankCard(props: IHankCard) {
 
       animate(".content", {
         height: {
-          to: isPortrait() ? "95%" : "75%",
+          to: isPortrait() ? "100%" : "75%",
           duration: `400`,
-          ease: isPortrait()
-            ? easings.spring({ mass: 2 })
-            : easings.spring({ mass: 1 }),
+          ease: easings.spring({ mass: 1 }),
         },
       });
     } else {
