@@ -271,16 +271,17 @@ a {
   }
 
   h1 {
-    font-size: 5.5rem;
+    font-size: 4.75rem;
   }
 
   h2 {
     font-size: 3rem;
     margin-top: -20px;
   }
+}
 
-  .socialMenu {
-    pointer-events: auto;
-    bottom: 6rem;
+@media (orientation: portrait) and (max-width: 450px) {
+  h1 {
+    font-size: 3.5rem;
   }
 }
