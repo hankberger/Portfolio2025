@@ -195,70 +195,92 @@ a {
   height: 100%;
 }
 
-@media screen and (orientation: portrait) {
-  .constraint {
-    padding: 10px;
-    display: flex;
-    align-items: flex-end;
+.socialMenu {
+  display: flex;
+  gap: 2rem;
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.socialMenu a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid white;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.socialMenu a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.socialMenu svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: white;
+}
+
+.content {
+  display: none;
+}
+
+/* Mobile/Portrait Styles */
+@media (orientation: portrait) {
+  main {
+    pointer-events: none;
   }
 
-  h2 {
-    margin-top: -10px;
+  .constraint {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .HankCard {
-    left: 0px;
-    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
-    align-items: center;
     flex-direction: column;
+    align-items: center;
     justify-content: space-between;
-    pointer-events: none;
-    margin: 15px 0px;
-    gap: 15px;
-    min-height: 100%;
-    max-height: max-content;
+    padding: 6rem 0;
   }
 
-  .title {
-    margin-top: 2ch;
-  }
-
-  .content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    margin: 0px;
-    height: max-content;
-  }
-
-  .big .content {
-    margin-left: 0px;
-  }
-
-  .getStarted {
-    will-change: transform;
-    font-size: 1.5rem;
-    pointer-events: all;
-    margin-bottom: 25px;
-  }
-
-  .chevron {
-    height: 2rem;
-    width: 35px;
-    margin-top: 3px;
-  }
-
-  .big .betStarted {
-    width: 100%;
-  }
-
-  .section {
+  .title.row {
     flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
 
-  video {
-    max-width: 100%;
+  .sparkle {
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+    height: 6rem;
+  }
+
+  .column {
+    align-items: center;
+  }
+
+  h1 {
+    font-size: 5.5rem;
+  }
+
+  h2 {
+    font-size: 3rem;
+    margin-top: -20px;
+  }
+
+  .socialMenu {
+    pointer-events: auto;
+    bottom: 6rem;
   }
 }

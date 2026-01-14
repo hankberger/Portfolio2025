@@ -2,10 +2,11 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import "./App.css";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
+import { isPortrait } from "./util/isPortrait";
+import { updateCamera } from "./util/updateCamera";
 
 function App() {
   // Canvas + UI refs for the 3-layer stack
@@ -22,13 +23,8 @@ function App() {
       0.01,
       1000
     );
-    camera.position.set(-4, 2, 13);
-    camera.rotation.set(-Math.PI / 16, 0, 0);
-
-    console.log(camera, camera.position, camera.rotation);
-
     // ---------------------------- Background Renderer / Scene ----------------------------
-
+    updateCamera(camera);
     // ---------------------------- Foreground Renderer / Scene ----------------------------
     const fgRenderer = new THREE.WebGLRenderer({
       canvas: fgCanvasRef.current!,
@@ -42,8 +38,6 @@ function App() {
     fgRenderer.setClearColor(0x000000, 0.0); // fully transparent
 
     const fgScene = new THREE.Scene();
-
-    let controls: any = undefined;
 
     // ---------------------------- Lights ----------------------------
     // We apply lights to BOTH scenes as needed. Since we're actually drawing the fish in fgScene
@@ -440,6 +434,7 @@ float bayerDither(vec2 pos) {
 
     // planes for pointer targeting
     const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    groundPlane.constant = 2;
 
     const verticalPlane = new THREE.Plane();
     {
@@ -677,10 +672,6 @@ float bayerDither(vec2 pos) {
         f.position.addScaledVector(forward, followerSpeeds[i] * dt);
       }
 
-      if (debug) {
-        controls.update();
-      }
-
       // pass 1: background
       // DOM layer sits visually above that
 
@@ -700,6 +691,7 @@ float bayerDither(vec2 pos) {
       camera.updateProjectionMatrix();
 
       fgRenderer.setSize(w, h);
+      updateCamera(camera);
     }
     window.addEventListener("resize", handleResize);
 
@@ -710,29 +702,11 @@ float bayerDither(vec2 pos) {
         fgScene.add(helper1);
         fgScene.add(helper2);
         fgScene.add(chosenMarker);
-        camera.position.set(-4, 2, 13);
-        camera.rotation.set(-Math.PI / 16, 0, 0);
-
-        if (controls == undefined) {
-          controls = new OrbitControls(camera, fgCanvasRef.current!);
-          controls.enableDamping = true;
-          controls.dampingFactor = 0.08;
-          controls.enablePan = false;
-          controls.enableZoom = true;
-          controls.target.set(-4, 0, 0);
-          controls.enabled = true;
-        } else {
-          controls.update();
-        }
-
         console.log(camera, camera.position, camera.rotation);
       } else {
         fgScene.remove(helper1);
         fgScene.remove(helper2);
         fgScene.remove(chosenMarker);
-        camera.position.set(-4, 2, 13);
-        camera.rotation.set(-Math.PI / 16, 0, 0);
-        controls.enabled = false;
         console.log(camera, camera.position, camera.rotation);
       }
     }
