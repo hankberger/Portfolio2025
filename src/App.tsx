@@ -5,7 +5,6 @@ import "./App.css";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
-import { isPortrait } from "./util/isPortrait";
 import { updateCamera } from "./util/updateCamera";
 
 function App() {
