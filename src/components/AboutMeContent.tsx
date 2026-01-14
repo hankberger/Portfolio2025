@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import "./styles/AboutMeContent.css";
 import { animate, easings, stagger } from "animejs";
-import ExperienceSection from "./ExperienceSection";
-import Showcase from "./Showcase";
 
 interface IAboutMeContent {
   closeCallback: () => void;
@@ -84,41 +82,6 @@ export default function AboutMeContent(props: IAboutMeContent) {
                 webkit-playsinline="true"
               />
             </div>
-            <div className="intro">
-              <h3>Welcome</h3>
-              {/* <a>
-                <svg
-                  fill="#ffffff"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 640 640"
-                >
-                  <path d="M581.7 188.1C575.5 164.4 556.9 145.8 533.4 139.5C490.9 128 320.1 128 320.1 128C320.1 128 149.3 128 106.7 139.5C83.2 145.8 64.7 164.4 58.4 188.1C47 231 47 320.4 47 320.4C47 320.4 47 409.8 58.4 452.7C64.7 476.3 83.2 494.2 106.7 500.5C149.3 512 320.1 512 320.1 512C320.1 512 490.9 512 533.5 500.5C557 494.2 575.5 476.3 581.8 452.7C593.2 409.8 593.2 320.4 593.2 320.4C593.2 320.4 593.2 231 581.8 188.1zM264.2 401.6L264.2 239.2L406.9 320.4L264.2 401.6z" />
-                </svg>
-                Watch how I made this
-              </a> */}
-              <a>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="#ffffff"
-                  viewBox="0 0 640 640"
-                >
-                  <path d="M320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM288 224C288 206.3 302.3 192 320 192C337.7 192 352 206.3 352 224C352 241.7 337.7 256 320 256C302.3 256 288 241.7 288 224zM280 288L328 288C341.3 288 352 298.7 352 312L352 400L360 400C373.3 400 384 410.7 384 424C384 437.3 373.3 448 360 448L280 448C266.7 448 256 437.3 256 424C256 410.7 266.7 400 280 400L304 400L304 336L280 336C266.7 336 256 325.3 256 312C256 298.7 266.7 288 280 288z" />
-                </svg>
-                This site is currently under construction. Things may look a
-                little strange until I'm finished.
-              </a>
-              <div>
-                Hey! I'm Hank. I'm a web, mobile, and animation expert.
-                <br />I love pushing technology to the limit to create joyful
-                experiences.
-              </div>
-            </div>
-          </div>
-          <div className="section">
-            <ExperienceSection />
-          </div>
-          <div className="section">
-            <Showcase />
           </div>
         </div>
       </div>
