@@ -166,7 +166,7 @@ export default function HankCard(props: IHankCard) {
             <img className="sparkle" src="sparkle.svg" />
             <div className="column">
               <h1>HANK BERGER</h1>
-              <h2>Frontend Engineer</h2>
+              <h2>Full Stack Engineer</h2>
             </div>
           </div>
 
