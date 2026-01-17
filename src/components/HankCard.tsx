@@ -57,8 +57,6 @@ export default function HankCard(props: IHankCard) {
   }, []);
 
   useEffect(() => {
-    //const path = document.querySelector(".chevron .yeet") as SVGPathElement;
-
     animate(".getStarted", {
       opacity: {
         from: 0,
