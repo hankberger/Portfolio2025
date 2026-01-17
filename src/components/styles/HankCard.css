@@ -235,6 +235,10 @@ a {
     pointer-events: none;
   }
 
+  .socialMenu {
+    pointer-events: auto;
+  }
+
   .constraint {
     flex-direction: column;
     justify-content: center;
