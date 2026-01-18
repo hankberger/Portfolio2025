@@ -357,9 +357,9 @@ float bayerDither(vec2 pos) {
           });
 
           fish.position.set(
-            THREE.MathUtils.randFloatSpread(10),
-            THREE.MathUtils.randFloat(-5, 5),
-            THREE.MathUtils.randFloatSpread(10)
+            (Math.random() > 0.5 ? 1 : -1) * THREE.MathUtils.randFloat(10, 20),
+            (Math.random() > 0.5 ? 1 : -1) * THREE.MathUtils.randFloat(10, 20),
+            12
           );
           fish.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
           if (i !== 0) {

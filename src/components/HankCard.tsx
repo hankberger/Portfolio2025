@@ -23,9 +23,9 @@ export default function HankCard(props: IHankCard) {
         to: 1,
         ease: easings.eases.inBounce(1),
         duration: 400,
-        delay: stagger(55),
+        delay: stagger(55, { start: 1200 }),
       },
-      x: [{ from: "1rem", to: "0rem", delay: stagger(50) }],
+      x: [{ from: "1rem", to: "0rem", delay: stagger(50, { start: 1200 }) }],
     } as any);
   }, []);
 
@@ -37,12 +37,11 @@ export default function HankCard(props: IHankCard) {
         to: 1,
         ease: easings.eases.inBounce(1),
         duration: 400,
-        delay: stagger(55),
+        delay: stagger(55, { start: 1200 }),
       },
-      x: [{ from: "1rem", to: "0rem", delay: stagger(50) }],
+      x: [{ from: "1rem", to: "0rem", delay: stagger(50, { start: 1200 }) }],
     } as any);
   }, []);
-
   useEffect(() => {
     const sparkle = document.getElementsByClassName("sparkle");
     animate(sparkle, {
