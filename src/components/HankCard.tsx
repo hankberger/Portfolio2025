@@ -156,12 +156,45 @@ export default function HankCard(props: IHankCard) {
     }
   };
 
+  function isSafari() {
+    if (typeof navigator === "undefined") return false;
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  }
+
+  const safari = isSafari();
+  const [introVideoDone, setIntroVideoDone] = useState(false);
+
+  const introSrc = safari ? "first.mov" : "first.webm";
+  const loopSrc = safari ? "test.mov" : "test.webm";
+
   return (
     <main>
       <div className="constraint">
         <div className="HankCard">
           <div className="title row">
-            <img className="sparkle" src="sparkle.svg" />
+            <div className="video-container">
+              <video
+                src={loopSrc}
+                autoPlay
+                muted
+                loop
+                playsInline
+                style={{ opacity: introVideoDone ? 1 : 0 }}
+                // @ts-ignore
+                webkit-playsinline="true"
+              />
+              <video
+                src={introSrc}
+                autoPlay
+                muted
+                playsInline
+                loop={false}
+                onEnded={() => setIntroVideoDone(true)}
+                style={{ opacity: introVideoDone ? 0 : 1 }}
+                // @ts-ignore
+                webkit-playsinline="true"
+              />
+            </div>
             <div className="column">
               <h1>HANK BERGER</h1>
               <h2>Full Stack Engineer</h2>
