@@ -1,5 +1,5 @@
-<!doctype html>
-<html lang="en" style="background-color: #0147ff;">
+<!DOCTYPE html>
+<html lang="en" style="background-color: #0147ff">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -65,31 +65,31 @@
       rel="stylesheet"
     />
 
+    <script>
+      const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(
+        navigator.userAgent
+      );
 
-<script>
-  const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      // Pick the correct file (Chrome = webm)
+      const sources = ["/first.webm", "/test.webm"];
 
-  // Pick the correct file (Chrome = webm)
-  const sources = [
-    "/first.webm",
-    "/test.webm"
-  ];
+      sources.forEach((src) => {
+        const v = document.createElement("video");
+        v.src = src;
+        v.muted = true;
+        v.preload = "auto";
+        v.playsInline = true;
+        v.fetchPriority = "high";
+        v.style.display = "none";
 
-  sources.forEach(src => {
-    const v = document.createElement("video");
-    v.src = src;
-    v.muted = true;
-    v.preload = "auto";
-    v.playsInline = true;
-    v.style.display = "none";
+        // force an early decode warmup
+        v.play()
+          .then(() => v.pause())
+          .catch(() => {});
 
-    // force an early decode warmup
-    v.play().then(() => v.pause()).catch(() => {});
-
-    document.head.appendChild(v);
-  });
-</script>
-
+        document.head.appendChild(v);
+      });
+    </script>
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -103,7 +103,7 @@
         "sameAs": []
       }
     </script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
