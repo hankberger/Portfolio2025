@@ -305,6 +305,16 @@ a {
     font-size: 3rem;
     margin-top: -20px;
   }
+
+  .video-container {
+    width: 150px;
+    height: 150px;
+  }
+
+  .video-container video {
+    width: 150px;
+    height: 150px;
+  }
 }
 
 @media (orientation: portrait) and (max-width: 450px) {
