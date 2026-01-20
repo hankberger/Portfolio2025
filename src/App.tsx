@@ -356,11 +356,16 @@ float bayerDither(vec2 pos) {
             }
           });
 
-          fish.position.set(
-            (Math.random() > 0.5 ? 1 : -1) * THREE.MathUtils.randFloat(10, 20),
-            (Math.random() > 0.5 ? 1 : -1) * THREE.MathUtils.randFloat(10, 20),
-            12
-          );
+          if (i === 0) {
+            // Player fish spawns behind camera, slightly to the back right
+            fish.position.set(4, 2, 22);
+          } else {
+            fish.position.set(
+              (Math.random() > 0.5 ? 1 : -1) * THREE.MathUtils.randFloat(10, 20),
+              (Math.random() > 0.5 ? 1 : -1) * THREE.MathUtils.randFloat(10, 20),
+              12
+            );
+          }
           fish.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
           if (i !== 0) {
             fish.scale.setScalar(THREE.MathUtils.randFloat(0.4, 0.9));

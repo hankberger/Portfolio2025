@@ -66,6 +66,7 @@ main {
   justify-content: center;
   height: 100%;
   width: 100%;
+  pointer-events: none;
 }
 
 .constraint {
@@ -216,6 +217,7 @@ a {
   cursor: pointer;
   gap: 2px;
   height: 100%;
+  pointer-events: auto;
 }
 
 .socialMenu {
@@ -225,6 +227,7 @@ a {
   bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
+  pointer-events: auto;
 }
 
 .socialMenu a {
@@ -254,14 +257,6 @@ a {
 
 /* Mobile/Portrait Styles */
 @media (orientation: portrait) {
-  main {
-    pointer-events: none;
-  }
-
-  .socialMenu {
-    pointer-events: auto;
-  }
-
   .constraint {
     flex-direction: column;
     justify-content: center;
