@@ -61,6 +61,12 @@ h2 {
   transition: opacity 0.3s ease;
 }
 
+.fallback-image {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+}
+
 main {
   display: flex;
   justify-content: center;
@@ -307,6 +313,11 @@ a {
   }
 
   .video-container video {
+    width: 150px;
+    height: 150px;
+  }
+
+  .fallback-image {
     width: 150px;
     height: 150px;
   }

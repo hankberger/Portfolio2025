@@ -162,9 +162,20 @@ export default function HankCard(props: IHankCard) {
 
   const safari = isSafari();
   const [introVideoDone, setIntroVideoDone] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const introVideoRef = useRef<HTMLVideoElement>(null);
 
   const introSrc = safari ? "first.mov" : "first.webm";
   const loopSrc = safari ? "test.mov" : "test.webm";
+
+  const handleVideoLoaded = () => {
+    const video = introVideoRef.current;
+    if (!video) return;
+
+    video.play().catch(() => {
+      setVideoFailed(true);
+    });
+  };
 
   return (
     <main>
@@ -172,27 +183,37 @@ export default function HankCard(props: IHankCard) {
         <div className="HankCard">
           <div className="title row">
             <div className="video-container">
-              <video
-                src={loopSrc}
-                autoPlay
-                muted
-                loop
-                playsInline
-                style={{ opacity: introVideoDone ? 1 : 0 }}
-                // @ts-ignore
-                webkit-playsinline="true"
-              />
-              <video
-                src={introSrc}
-                autoPlay
-                muted
-                playsInline
-                loop={false}
-                onEnded={() => setIntroVideoDone(true)}
-                style={{ opacity: introVideoDone ? 0 : 1 }}
-                // @ts-ignore
-                webkit-playsinline="true"
-              />
+              {videoFailed ? (
+                <img src="/fallback.webp" alt="" className="fallback-image" />
+              ) : (
+                <>
+                  <video
+                    src={loopSrc}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    style={{ opacity: introVideoDone ? 1 : 0 }}
+                    onError={() => setVideoFailed(true)}
+                    // @ts-ignore
+                    webkit-playsinline="true"
+                  />
+                  <video
+                    ref={introVideoRef}
+                    src={introSrc}
+                    autoPlay
+                    muted
+                    playsInline
+                    loop={false}
+                    onEnded={() => setIntroVideoDone(true)}
+                    onError={() => setVideoFailed(true)}
+                    onLoadedData={handleVideoLoaded}
+                    style={{ opacity: introVideoDone ? 0 : 1 }}
+                    // @ts-ignore
+                    webkit-playsinline="true"
+                  />
+                </>
+              )}
             </div>
             <div className="column">
               <h1>HANK BERGER</h1>
