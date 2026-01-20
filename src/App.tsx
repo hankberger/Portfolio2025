@@ -456,7 +456,7 @@ float bayerDither(vec2 pos) {
     const hitGround = new THREE.Vector3();
     const hitVertical = new THREE.Vector3();
 
-    function ndcFromEvent(e: MouseEvent | TouchEvent) {
+    function ndcFromEvent(e: MouseEvent | TouchEvent | PointerEvent) {
       const rect = bgCanvasRef.current!.getBoundingClientRect();
       let clientX: number;
       let clientY: number;
@@ -475,7 +475,7 @@ float bayerDither(vec2 pos) {
       mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     }
 
-    function onPointerMove(e: MouseEvent | TouchEvent) {
+    function onPointerMove(e: MouseEvent | TouchEvent | PointerEvent) {
       ndcFromEvent(e);
       raycaster.setFromCamera(mouse, camera);
 
@@ -714,6 +714,7 @@ float bayerDither(vec2 pos) {
       if (e.key === "d") toggleDebug();
     });
 
+    bgCanvasRef.current!.addEventListener("pointermove", onPointerMove);
     bgCanvasRef.current!.addEventListener("mousemove", onPointerMove);
     bgCanvasRef.current!.addEventListener("touchmove", onPointerMove, {
       passive: true, // important for mobile perf
@@ -726,10 +727,9 @@ float bayerDither(vec2 pos) {
       window.removeEventListener("keydown", toggleDebug);
 
       if (bgCanvasRef.current) {
-        if (bgCanvasRef.current) {
-          bgCanvasRef.current.removeEventListener("mousemove", onPointerMove);
-          bgCanvasRef.current.removeEventListener("touchmove", onPointerMove);
-        }
+        bgCanvasRef.current.removeEventListener("pointermove", onPointerMove);
+        bgCanvasRef.current.removeEventListener("mousemove", onPointerMove);
+        bgCanvasRef.current.removeEventListener("touchmove", onPointerMove);
       }
 
       fgRenderer.dispose();
