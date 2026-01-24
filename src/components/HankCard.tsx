@@ -217,7 +217,7 @@ export default function HankCard(props: IHankCard) {
             </div>
             <div className="column">
               <h1>HANK BERGER</h1>
-              <h2>Full Stack Engineer</h2>
+              <h2>Developer & Artist </h2>
             </div>
           </div>
 
