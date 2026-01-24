@@ -460,6 +460,7 @@ float bayerDither(vec2 pos) {
     const mouseTarget = new THREE.Vector3();
     const hitGround = new THREE.Vector3();
     const hitVertical = new THREE.Vector3();
+    let hasMouseInput = false; // Track if user has moved mouse/touch
 
     function ndcFromEvent(e: MouseEvent | TouchEvent | PointerEvent) {
       if (!bgCanvasRef.current) return;
@@ -516,6 +517,11 @@ float bayerDither(vec2 pos) {
         mouseTarget.copy(hitVertical);
       }
 
+      // Mark that we've received mouse input
+      if (!hasMouseInput) {
+        hasMouseInput = true;
+      }
+
       chosenMarker.position.copy(mouseTarget);
     }
 
@@ -547,14 +553,14 @@ float bayerDither(vec2 pos) {
         if (sh?.uniforms?.time) sh.uniforms.time.value += dt;
       });
 
-      // Leader (index 0) -> mouseTarget
-      if (
-        typeof player !== "undefined" &&
-        (mouseTarget.x || mouseTarget.y || mouseTarget.z)
-      ) {
-        v1.copy(scatter ? new THREE.Vector3(0, -20, 10) : mouseTarget).sub(
-          player.position
-        );
+      // Leader (index 0) -> mouseTarget (or FIXED_TARGET until first input)
+      if (typeof player !== "undefined") {
+        // Use FIXED_TARGET until user provides mouse input
+        const targetPosition = hasMouseInput
+          ? (scatter ? new THREE.Vector3(0, -20, 10) : mouseTarget)
+          : FIXED_TARGET;
+
+        v1.copy(targetPosition).sub(player.position);
         const dist = v1.length();
 
         if (dist > 1e-3) {
@@ -579,8 +585,6 @@ float bayerDither(vec2 pos) {
         } else {
           if (mixer) mixer.update(dt);
         }
-      } else {
-        if (mixer) mixer.update(dt);
       }
 
       // Followers -> FIXED_TARGET
