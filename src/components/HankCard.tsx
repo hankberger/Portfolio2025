@@ -254,7 +254,7 @@ export default function HankCard(props: IHankCard) {
               </svg>
             </a>
             <a
-              href="https://x.com/InternetHank"
+              href="https://x.com/h4nkdog"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="X"
