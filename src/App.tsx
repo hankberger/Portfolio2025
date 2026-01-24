@@ -462,18 +462,21 @@ float bayerDither(vec2 pos) {
     const hitVertical = new THREE.Vector3();
 
     function ndcFromEvent(e: MouseEvent | TouchEvent | PointerEvent) {
-      const rect = bgCanvasRef.current!.getBoundingClientRect();
+      if (!bgCanvasRef.current) return;
+
+      const rect = bgCanvasRef.current.getBoundingClientRect();
       let clientX: number;
       let clientY: number;
 
-      if (e instanceof TouchEvent) {
+      // Check if it's a touch event by checking for touches property
+      if ('touches' in e && e.touches && e.touches.length > 0) {
         // use the first touch point
         const t = e.touches[0] || e.changedTouches[0];
         clientX = t.clientX;
         clientY = t.clientY;
       } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
+        clientX = (e as MouseEvent | PointerEvent).clientX;
+        clientY = (e as MouseEvent | PointerEvent).clientY;
       }
 
       mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
@@ -481,7 +484,16 @@ float bayerDither(vec2 pos) {
     }
 
     function onPointerMove(e: MouseEvent | TouchEvent | PointerEvent) {
+      if (debug) {
+        console.log('[SAFARI DEBUG] Event type:', e.type, 'Target:', (e.target as HTMLElement)?.tagName);
+      }
+
       ndcFromEvent(e);
+
+      if (debug) {
+        console.log('[SAFARI DEBUG] Mouse NDC:', { x: mouse.x, y: mouse.y });
+      }
+
       raycaster.setFromCamera(mouse, camera);
 
       const gotGround = raycaster.ray.intersectPlane(groundPlane, hitGround);
@@ -489,6 +501,10 @@ float bayerDither(vec2 pos) {
         verticalPlane,
         hitVertical
       );
+
+      if (debug) {
+        console.log('[SAFARI DEBUG] Intersections:', { gotGround, gotVertical });
+      }
 
       if (gotGround && gotVertical) {
         const dG2 = raycaster.ray.origin.distanceToSquared(hitGround);
@@ -719,23 +735,32 @@ float bayerDither(vec2 pos) {
       if (e.key === "d") toggleDebug();
     });
 
-    bgCanvasRef.current!.addEventListener("pointermove", onPointerMove);
-    bgCanvasRef.current!.addEventListener("mousemove", onPointerMove);
-    bgCanvasRef.current!.addEventListener("touchmove", onPointerMove, {
-      passive: true, // important for mobile perf
-    });
+    // Window-level event wrapper to filter out UI elements
+    function onWindowPointerMove(e: MouseEvent | TouchEvent | PointerEvent) {
+      const target = e.target as HTMLElement;
+
+      // Skip if event is on interactive UI elements
+      if (target.closest('.getStarted') || target.closest('.socialMenu')) {
+        return;
+      }
+
+      onPointerMove(e);
+    }
+
+    // Listen on window to ensure Safari receives events
+    window.addEventListener("pointermove", onWindowPointerMove, { passive: false });
+    window.addEventListener("mousemove", onWindowPointerMove, { passive: false });
+    window.addEventListener("touchmove", onWindowPointerMove, { passive: true });
+    console.log('[EVENT SETUP] Registered window-level listeners');
 
     // ---------------------------- Cleanup ----------------------------
     return () => {
       running = false;
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("keydown", toggleDebug);
-
-      if (bgCanvasRef.current) {
-        bgCanvasRef.current.removeEventListener("pointermove", onPointerMove);
-        bgCanvasRef.current.removeEventListener("mousemove", onPointerMove);
-        bgCanvasRef.current.removeEventListener("touchmove", onPointerMove);
-      }
+      window.removeEventListener("pointermove", onWindowPointerMove);
+      window.removeEventListener("mousemove", onWindowPointerMove);
+      window.removeEventListener("touchmove", onWindowPointerMove);
 
       fgRenderer.dispose();
     };
@@ -765,6 +790,9 @@ float bayerDither(vec2 pos) {
           height: "100vh",
           zIndex: 0,
           pointerEvents: "auto", // we listen for mousemove here
+          touchAction: "none",    // Prevent Safari touch gestures
+          userSelect: "none",     // Prevent text selection interference
+          WebkitUserSelect: "none", // Safari-prefixed version
         }}
       />
 
