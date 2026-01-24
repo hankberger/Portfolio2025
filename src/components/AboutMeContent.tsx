@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./styles/AboutMeContent.css";
 import { animate, easings, stagger } from "animejs";
+import { getVideoSrc } from "../util/browserDetection";
 
 interface IAboutMeContent {
   closeCallback: () => void;
@@ -33,16 +34,10 @@ export default function AboutMeContent(props: IAboutMeContent) {
     });
   }, []);
 
-  function isSafari() {
-    if (typeof navigator === "undefined") return false;
-    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  }
-
-  const safari = isSafari();
   const introVideoRef = useRef<HTMLVideoElement>(null);
 
-  const introSrc = safari ? "first.mov" : "first.webm";
-  const loopSrc = safari ? "test.mov" : "test.webm";
+  const introSrc = getVideoSrc("first");
+  const loopSrc = getVideoSrc("test");
 
   const handleVideoLoaded = () => {
     const video = introVideoRef.current;

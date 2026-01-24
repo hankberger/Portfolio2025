@@ -84,12 +84,34 @@
     />
 
     <script>
-      const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(
-        navigator.userAgent
-      );
+      /**
+       * Browser detection for video format selection
+       * NOTE: Keep this logic in sync with src/util/browserDetection.ts
+       *
+       * Priority order (most specific first):
+       * 1. Instagram iOS - Uses WKWebView (Safari engine) → .mov
+       * 2. Safari - Desktop/mobile Safari → .mov
+       * 3. Default - Chrome/Firefox/Edge → .webm
+       */
+      function detectVideoExtension() {
+        const ua = navigator.userAgent;
 
-      // Pick the correct file (Chrome = webm)
-      const sources = ["/first.webm", "/test.webm"];
+        // Instagram iOS in-app browser (must check before Safari)
+        if (/Instagram/i.test(ua) && /iPhone|iPad/i.test(ua)) {
+          return "mov";
+        }
+
+        // Safari desktop/mobile (not Chrome or Android)
+        if (/^((?!chrome|android).)*safari/i.test(ua)) {
+          return "mov";
+        }
+
+        // Default: Chrome, Firefox, Edge (WebM compatible)
+        return "webm";
+      }
+
+      const ext = detectVideoExtension();
+      const sources = [`/first.${ext}`, `/test.${ext}`];
 
       sources.forEach((src) => {
         const v = document.createElement("video");

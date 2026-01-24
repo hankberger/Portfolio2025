@@ -3,6 +3,7 @@ import "./styles/HankCard.css";
 import { animate, stagger, splitText, easings } from "animejs";
 import ButtonContent from "./ButtonContent";
 import { isPortrait } from "../util/isPortrait";
+import { getVideoSrc } from "../util/browserDetection";
 
 interface IHankCard {
   scatterCallback: (shouldScatter: boolean) => void;
@@ -155,18 +156,12 @@ export default function HankCard(props: IHankCard) {
     }
   };
 
-  function isSafari() {
-    if (typeof navigator === "undefined") return false;
-    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  }
-
-  const safari = isSafari();
   const [introVideoDone, setIntroVideoDone] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const introVideoRef = useRef<HTMLVideoElement>(null);
 
-  const introSrc = safari ? "first.mov" : "first.webm";
-  const loopSrc = safari ? "test.mov" : "test.webm";
+  const introSrc = getVideoSrc("first");
+  const loopSrc = getVideoSrc("test");
 
   const handleVideoLoaded = () => {
     const video = introVideoRef.current;
