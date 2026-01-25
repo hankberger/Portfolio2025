@@ -12,11 +12,6 @@
   /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 2px rgba(0, 0, 0, 0.04); */
 }
 
-.big {
-  height: 100%;
-  width: calc(80% - 4.5rem);
-}
-
 h1 {
   font-family: "DM Serif Display", serif;
   font-weight: 400;
@@ -126,24 +121,6 @@ button {
   height: 100%;
 }
 
-.chevron {
-  height: 1rem;
-  width: 30px;
-  margin-top: 3px;
-}
-
-.watchButton {
-  color: white;
-  font-weight: 200;
-  font-size: 0.75rem;
-}
-
-.introButtonContent {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
 nav button img {
   height: 1rem;
   fill: white;
@@ -199,16 +176,9 @@ a {
   gap: 5px;
 }
 
-.big .getStarted {
-  outline: none !important; /* no focus ring */
-  align-items: flex-start;
-  padding: 0px;
-  cursor: default;
-}
-
 .getStarted {
   display: flex;
-  width: 180px;
+  width: fit-content;
   font-size: 1rem;
   align-items: center;
   justify-content: center;
@@ -219,11 +189,30 @@ a {
   font-family: "DM Sans", sans-serif;
   font-optical-sizing: auto;
   font-weight: 300;
-  padding: 10px 10px 10px 20px;
+  padding: 10px 20px;
   cursor: pointer;
-  gap: 2px;
-  height: 100%;
+  gap: 1px;
   pointer-events: auto;
+  margin-top: 0.5rem;
+}
+
+.getStarted.active {
+  border: 1px solid transparent;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  padding: 10px 0;
+  margin-left: -1.2rem;
+}
+
+.buttonIcon {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex-shrink: 0;
+  padding: 0 4px;
+  box-sizing: content-box;
+  overflow: visible;
+  margin-top: 2px;
 }
 
 .socialMenu {
@@ -255,10 +244,6 @@ a {
   width: 1.5rem;
   height: 1.5rem;
   fill: white;
-}
-
-.content {
-  display: none;
 }
 
 /* Mobile/Portrait Styles */
@@ -320,6 +305,22 @@ a {
   .fallback-image {
     width: 150px;
     height: 150px;
+  }
+
+  .content {
+    margin-left: 0;
+    align-items: center;
+  }
+
+  .getStarted {
+    font-size: 1.67rem;
+    width: auto;
+    padding: 10px 20px;
+  }
+
+  .buttonIcon {
+    width: 2rem;
+    height: 2rem;
   }
 }
 
