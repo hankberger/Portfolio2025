@@ -588,10 +588,10 @@ float bayerDither(vec2 pos) {
 
       // Leader (index 0) -> mouseTarget (or FIXED_TARGET until first input)
       if (typeof player !== "undefined") {
-        // Use FIXED_TARGET until user provides mouse input
-        const targetPosition = hasMouseInputRef.current
-          ? (scatterRef.current ? new THREE.Vector3(0, -20, 10) : mouseTarget)
-          : FIXED_TARGET;
+        // Scatter takes priority - fish flee regardless of mouse input
+        const targetPosition = scatterRef.current
+          ? new THREE.Vector3(0, -12, 8)
+          : (hasMouseInputRef.current ? mouseTarget : FIXED_TARGET);
 
         v1.copy(targetPosition).sub(player.position);
         const dist = v1.length();
@@ -650,7 +650,7 @@ float bayerDither(vec2 pos) {
         let avoidanceFactor = 0;
 
         const targetPoint = v1
-          .copy(scatterRef.current ? new THREE.Vector3(10, -15, 20) : FIXED_TARGET)
+          .copy(scatterRef.current ? new THREE.Vector3(8, -10, 15) : FIXED_TARGET)
           .add(followerOffsets[i])
           .add(v2);
 
