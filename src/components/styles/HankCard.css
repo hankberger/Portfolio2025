@@ -205,6 +205,12 @@ a {
   margin-left: -1.2rem;
 }
 
+.buttonContent {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
 .buttonIcon {
   width: 1.2rem;
   height: 1.2rem;
