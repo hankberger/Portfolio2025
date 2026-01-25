@@ -1,18 +1,45 @@
 // App.tsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { animate, easings } from "animejs";
 import "./App.css";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
+import PointerHint from "./components/PointerHint";
 import { updateCamera } from "./util/updateCamera";
+import { isPortrait } from "./util/isPortrait";
 
 function App() {
   // Canvas + UI refs for the 3-layer stack
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  let scatter = false;
+  const [showPointerHint, setShowPointerHint] = useState(false);
+  const pointerHintFadingRef = useRef(false);
+  const scatterRef = useRef(false);
+  const hasMouseInputRef = useRef(false);
   let debug = false;
+
+  const fadeOutPointerHint = () => {
+    if (pointerHintFadingRef.current) return;
+    pointerHintFadingRef.current = true;
+
+    animate(".pointer-hint", {
+      opacity: {
+        to: 0,
+        duration: 500,
+        ease: easings.eases.inOutCirc,
+      },
+      y: {
+        to: "1.5rem",
+        duration: 600,
+        ease: easings.eases.inCirc,
+      },
+      onComplete: () => {
+        setShowPointerHint(false);
+      },
+    } as any);
+  };
 
   useEffect(() => {
     // ---------------------------- Shared Camera ----------------------------
@@ -460,7 +487,11 @@ float bayerDither(vec2 pos) {
     const mouseTarget = new THREE.Vector3();
     const hitGround = new THREE.Vector3();
     const hitVertical = new THREE.Vector3();
-    let hasMouseInput = false; // Track if user has moved mouse/touch
+
+    // Check portrait mode and show hint initially
+    if (isPortrait()) {
+      setShowPointerHint(true);
+    }
 
     function ndcFromEvent(e: MouseEvent | TouchEvent | PointerEvent) {
       if (!bgCanvasRef.current) return;
@@ -518,8 +549,10 @@ float bayerDither(vec2 pos) {
       }
 
       // Mark that we've received mouse input
-      if (!hasMouseInput) {
-        hasMouseInput = true;
+      if (!hasMouseInputRef.current) {
+        hasMouseInputRef.current = true;
+        // Fade out pointer hint when user starts interacting
+        fadeOutPointerHint();
       }
 
       chosenMarker.position.copy(mouseTarget);
@@ -556,8 +589,8 @@ float bayerDither(vec2 pos) {
       // Leader (index 0) -> mouseTarget (or FIXED_TARGET until first input)
       if (typeof player !== "undefined") {
         // Use FIXED_TARGET until user provides mouse input
-        const targetPosition = hasMouseInput
-          ? (scatter ? new THREE.Vector3(0, -20, 10) : mouseTarget)
+        const targetPosition = hasMouseInputRef.current
+          ? (scatterRef.current ? new THREE.Vector3(0, -20, 10) : mouseTarget)
           : FIXED_TARGET;
 
         v1.copy(targetPosition).sub(player.position);
@@ -617,14 +650,14 @@ float bayerDither(vec2 pos) {
         let avoidanceFactor = 0;
 
         const targetPoint = v1
-          .copy(scatter ? new THREE.Vector3(10, -15, 20) : FIXED_TARGET)
+          .copy(scatterRef.current ? new THREE.Vector3(10, -15, 20) : FIXED_TARGET)
           .add(followerOffsets[i])
           .add(v2);
 
         if (player) {
           const toPlayer = v3.copy(f.position).sub(player.position);
           const distToPlayer = toPlayer.length();
-          const radius = scatter ? 100 : PLAYER_AVOID_RADIUS;
+          const radius = scatterRef.current ? 100 : PLAYER_AVOID_RADIUS;
           if (distToPlayer > 1e-5 && distToPlayer < radius) {
             const falloff = 1 - distToPlayer / radius;
             avoidanceFactor = THREE.MathUtils.clamp(
@@ -772,7 +805,11 @@ float bayerDither(vec2 pos) {
 
   // ---------------------------- Render JSX ----------------------------
   const scatterDaFish = (shouldScatter: boolean) => {
-    scatter = shouldScatter;
+    scatterRef.current = shouldScatter;
+    // Fade out pointer hint when scatter mode is on
+    if (shouldScatter) {
+      fadeOutPointerHint();
+    }
   };
 
   return (
@@ -802,6 +839,9 @@ float bayerDither(vec2 pos) {
 
       {/* UI layer (middle) */}
       <HankCard scatterCallback={scatterDaFish} />
+
+      {/* Pointer hint - only in portrait mode when user hasn't interacted */}
+      {showPointerHint && <PointerHint />}
 
       {/* Foreground scene (fish OVER ui) */}
       <canvas
