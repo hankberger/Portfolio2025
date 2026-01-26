@@ -177,7 +177,7 @@ a {
 }
 
 .getStarted {
-  display: flex;
+  display: none;
   width: fit-content;
   font-size: 1rem;
   align-items: center;
