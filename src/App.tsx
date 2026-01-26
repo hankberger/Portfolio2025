@@ -6,6 +6,7 @@ import "./App.css";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
+import PostContent from "./components/PostContent";
 import PointerHint from "./components/PointerHint";
 import { updateCamera } from "./util/updateCamera";
 import { isPortrait } from "./util/isPortrait";
@@ -15,6 +16,7 @@ function App() {
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [showPointerHint, setShowPointerHint] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
   const pointerHintFadingRef = useRef(false);
   const scatterRef = useRef(false);
   const hasMouseInputRef = useRef(false);
@@ -868,7 +870,12 @@ float bayerDither(vec2 pos) {
       />
 
       {/* UI layer (middle) */}
-      <HankCard scatterCallback={scatterDaFish} />
+      <main>
+        <div className="constraint">
+          <HankCard scatterCallback={scatterDaFish} onExpandChange={setContentVisible} />
+          <PostContent visible={contentVisible} />
+        </div>
+      </main>
 
       {/* Pointer hint - only in portrait mode when user hasn't interacted */}
       {showPointerHint && <PointerHint />}

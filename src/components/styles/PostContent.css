@@ -1,0 +1,42 @@
+.post-content {
+  display: flex;
+  flex-direction: column;
+  margin-left: 4rem;
+  pointer-events: auto;
+  flex: 1;
+}
+
+.dummy-section {
+  border: 2px solid red;
+  min-height: 300px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.dummy-label {
+  color: white;
+  font-family: "DM Sans", sans-serif;
+  font-size: 1.25rem;
+  opacity: 0.6;
+}
+
+/* Narrow screens (below 1350px) and Portrait - use column layout */
+@media (orientation: portrait), (max-width: 1350px) {
+  .post-content {
+    width: 90%;
+    margin-left: 0;
+    margin-top: 2rem;
+    align-items: center;
+    flex: none;
+    flex-shrink: 0;
+  }
+
+  .dummy-section {
+    width: 100%;
+    min-height: 200px;
+  }
+}

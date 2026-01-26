@@ -6,7 +6,7 @@ body {
   font-size: 20px;
 }
 
-@media screen and (orientation: portrait) {
+@media (orientation: portrait), (max-width: 1350px) {
   html,
   body {
     font-size: 12px;

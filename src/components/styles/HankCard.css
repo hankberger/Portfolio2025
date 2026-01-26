@@ -3,13 +3,12 @@
   flex-direction: column;
   align-items: left;
   width: auto;
-  position: relative;
-  left: 10%;
   height: min-content;
   justify-content: center;
   /* background-color: white; */
   border-radius: 10px;
   /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 2px rgba(0, 0, 0, 0.04); */
+  flex-shrink: 0;
 }
 
 h1 {
@@ -74,8 +73,11 @@ main {
   height: 100%;
   width: 100%;
   display: flex;
-  justify-content: left;
+  justify-content: flex-start;
   align-items: center;
+  padding-left: 10%;
+  padding-right: 10%;
+  box-sizing: border-box;
 }
 
 .HankImage {
@@ -177,7 +179,7 @@ a {
 }
 
 .getStarted {
-  display: none;
+  display: flex;
   width: fit-content;
   font-size: 1rem;
   align-items: center;
@@ -252,25 +254,58 @@ a {
   fill: white;
 }
 
-/* Mobile/Portrait Styles */
-@media (orientation: portrait) {
+/* Smaller desktop screens (1920px and below) */
+@media (orientation: landscape) and (max-width: 2000px) {
+  h1 {
+    font-size: 3rem;
+  }
+
+  h2 {
+    font-size: 1.7rem;
+    margin-top: -12px;
+  }
+
+  .video-container {
+    width: 150px;
+    height: 150px;
+  }
+
+  .video-container video {
+    width: 150px;
+    height: 150px;
+  }
+
+  .fallback-image {
+    width: 150px;
+    height: 150px;
+  }
+
+  .getStarted {
+    font-size: 0.875rem;
+    padding: 8px 16px;
+  }
+
+  .buttonIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+/* Narrow screens (below 1350px) and Portrait - use column layout */
+@media (orientation: portrait), (max-width: 1350px) {
   .constraint {
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    padding: 2rem 0;
+    overflow-y: auto;
   }
 
   .HankCard {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 2rem 0 6rem 0;
+    flex-shrink: 0;
   }
 
   .title.row {
