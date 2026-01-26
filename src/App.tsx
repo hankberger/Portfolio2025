@@ -18,7 +18,22 @@ function App() {
   const pointerHintFadingRef = useRef(false);
   const scatterRef = useRef(false);
   const hasMouseInputRef = useRef(false);
+  const inactivityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   let debug = false;
+
+  const INACTIVITY_DELAY = 5000;
+
+  const startInactivityTimer = () => {
+    if (inactivityTimeoutRef.current) {
+      clearTimeout(inactivityTimeoutRef.current);
+    }
+    inactivityTimeoutRef.current = setTimeout(() => {
+      if (!scatterRef.current && isPortrait()) {
+        pointerHintFadingRef.current = false;
+        setShowPointerHint(true);
+      }
+    }, INACTIVITY_DELAY);
+  };
 
   const fadeOutPointerHint = () => {
     if (pointerHintFadingRef.current) return;
@@ -37,6 +52,7 @@ function App() {
       },
       onComplete: () => {
         setShowPointerHint(false);
+        startInactivityTimer();
       },
     } as any);
   };
@@ -551,9 +567,11 @@ float bayerDither(vec2 pos) {
       // Mark that we've received mouse input
       if (!hasMouseInputRef.current) {
         hasMouseInputRef.current = true;
-        // Fade out pointer hint when user starts interacting
-        fadeOutPointerHint();
       }
+      // Fade out pointer hint on interaction (guards against redundant calls internally)
+      fadeOutPointerHint();
+      // Always reset inactivity timer on interaction
+      startInactivityTimer();
 
       chosenMarker.position.copy(mouseTarget);
     }
@@ -799,6 +817,10 @@ float bayerDither(vec2 pos) {
       window.removeEventListener("mousemove", onWindowPointerMove);
       window.removeEventListener("touchmove", onWindowPointerMove);
 
+      if (inactivityTimeoutRef.current) {
+        clearTimeout(inactivityTimeoutRef.current);
+      }
+
       fgRenderer.dispose();
     };
   }, []);
@@ -809,6 +831,14 @@ float bayerDither(vec2 pos) {
     // Fade out pointer hint when scatter mode is on
     if (shouldScatter) {
       fadeOutPointerHint();
+      // Clear inactivity timer while card is expanded
+      if (inactivityTimeoutRef.current) {
+        clearTimeout(inactivityTimeoutRef.current);
+        inactivityTimeoutRef.current = null;
+      }
+    } else {
+      // Card collapsed - restart inactivity timer
+      startInactivityTimer();
     }
   };
 
