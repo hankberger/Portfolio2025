@@ -12,7 +12,7 @@
   gap: 1rem;
   border: 2px solid red;
   border-radius: 8px;
-  padding: 0 2rem 2rem 2rem;
+  padding: 0;
   box-sizing: border-box;
   width: 100%;
 }
@@ -28,9 +28,15 @@
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   backdrop-filter: blur(8px);
   opacity: 0;
+  will-change: transform, opacity;
+}
+
+.social-button svg {
+  width: 2rem;
+  height: 2rem;
 }
 
 .social-button:hover {
@@ -42,11 +48,6 @@
 
 .social-button:active {
   transform: translateY(0);
-}
-
-.social-button svg {
-  width: 2rem;
-  height: 2rem;
 }
 
 /* Medium screens (1920px and below) - smaller buttons in landscape */

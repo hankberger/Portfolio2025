@@ -51,23 +51,20 @@ export default function PostContent({ visible }: IPostContent) {
   useEffect(() => {
     if (visible && !hasAnimated.current) {
       hasAnimated.current = true;
-      animate(".post-content", {
+
+      // Buttons fade in smoothly
+      animate(".social-button", {
         opacity: {
           from: 0,
           to: 1,
           duration: 400,
-          ease: easings.eases.outQuad,
+          delay: stagger(80, { start: 200 }),
         },
-        y: [{ from: "1rem", to: "0rem" }],
-        delay: 300,
-      } as any);
-
-      animate(".social-button", {
-        opacity: { from: 0, to: 1 },
-        scale: { from: 0.8, to: 1 },
-        delay: stagger(80, { start: 500 }),
-        duration: 400,
-        ease: easings.eases.outQuad,
+        scale: [{ from: 0.85, to: 1, delay: stagger(80, { start: 200 }) }],
+        y: [{ from: "0.5rem", to: "0rem", delay: stagger(80, { start: 200 }) }],
+        delay: stagger(80, { start: 200 }),
+        duration: 500,
+        ease: easings.eases.outQuart,
       } as any);
     }
 
