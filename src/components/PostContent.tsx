@@ -66,6 +66,15 @@ export default function PostContent({ visible }: IPostContent) {
         duration: 500,
         ease: easings.eases.outQuart,
       } as any);
+
+      // Hello card fade in
+      animate(".hello-card", {
+        opacity: [0, 1],
+        y: ["1rem", "0rem"],
+        delay: 500,
+        duration: 600,
+        ease: easings.eases.outQuart,
+      } as any);
     }
 
     if (!visible) {
@@ -90,6 +99,12 @@ export default function PostContent({ visible }: IPostContent) {
             {social.icon}
           </a>
         ))}
+      </div>
+      <div className="hello-card">
+        <div>
+          <h1 className="hello-title">Currently:</h1>
+          <h2 className="hello-sub">Software Developer @ Epic Systems</h2>
+        </div>
       </div>
     </div>
   );

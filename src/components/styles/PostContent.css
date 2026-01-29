@@ -1,16 +1,16 @@
 .post-content {
   display: flex;
   flex-direction: column;
-  margin-left: 4rem;
+  margin: 0 auto;
   pointer-events: auto;
   flex: 1;
+  max-width: 600px;
 }
 
 .content-section {
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  border: 2px solid red;
   border-radius: 8px;
   padding: 0;
   box-sizing: border-box;
@@ -22,13 +22,17 @@
   align-items: center;
   justify-content: center;
   flex: 1;
+  min-width: 3.5rem;
   height: 3.5rem;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   backdrop-filter: blur(8px);
   opacity: 0;
   will-change: transform, opacity;
@@ -50,8 +54,53 @@
   transform: translateY(0);
 }
 
-/* Medium screens (1920px and below) - smaller buttons in landscape */
-@media (max-width: 1920px) and (orientation: landscape) {
+.hello-card {
+  margin-top: 1rem;
+  padding: 1.5rem 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  display: flex;
+}
+
+.hello-card svg {
+  height: 2rem;
+  width: 2rem;
+  fill: #ffffff;
+  padding-right: 0.5rem;
+}
+
+.hello-title {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: white;
+}
+
+.hello-sub {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-size: 1.5rem;
+  font-weight: 200;
+  color: white;
+}
+
+.horizontal-divider {
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  width: 100%;
+  margin: 5px 0px;
+}
+
+/* Medium screens (2000px and below) - smaller buttons in landscape */
+@media (max-width: 2000px) and (orientation: landscape) {
   .social-button {
     height: 3rem;
   }
@@ -60,14 +109,31 @@
     width: 1.75rem;
     height: 1.75rem;
   }
+
+  .hello-title {
+    margin: 0;
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: white;
+  }
+
+  .hello-sub {
+    margin: 0;
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-size: 1rem;
+    font-weight: 200;
+    color: white;
+  }
 }
 
 /* Narrow screens (below 1350px) and Portrait - use column layout */
 @media (orientation: portrait), (max-width: 1350px) {
   .post-content {
     width: 90%;
-    margin-left: 0;
-    margin-top: 2rem;
+    margin: 2rem auto 0;
     align-items: center;
     flex: none;
     flex-shrink: 0;
