@@ -6,6 +6,14 @@ interface IPostContent {
   visible: boolean;
 }
 
+const carouselLinks = [
+  { name: "MyChart Bedside", url: "https://www.epic.com/software/mychart-bedside" },
+  { name: "Epic Systems", url: "https://www.epic.com" },
+  { name: "Healthcare IT", url: "https://www.healthcareitnews.com" },
+  { name: "Patient Portal", url: "https://www.mychart.com" },
+  { name: "FHIR Standards", url: "https://www.hl7.org/fhir" },
+];
+
 const socialLinks = [
   {
     name: "Github",
@@ -48,6 +56,28 @@ const socialLinks = [
 export default function PostContent({ visible }: IPostContent) {
   const hasAnimated = useRef(false);
   const [expanded, setExpanded] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [scrollState, setScrollState] = useState({ atStart: true, atEnd: false });
+
+  const updateScrollState = () => {
+    if (carouselRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+      setScrollState({
+        atStart: scrollLeft <= 5,
+        atEnd: scrollLeft + clientWidth >= scrollWidth - 5,
+      });
+    }
+  };
+
+  const scrollCarousel = (direction: "left" | "right") => {
+    if (carouselRef.current) {
+      const scrollAmount = 150;
+      carouselRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   useEffect(() => {
     if (visible && !hasAnimated.current) {
@@ -122,6 +152,57 @@ export default function PostContent({ visible }: IPostContent) {
             Building patient-facing healthcare applications that help people
             manage their hospital stay and recovery journey.
           </p>
+          <div className="carousel-container">
+            <button
+              className="carousel-btn carousel-btn-left"
+              onClick={(e) => {
+                e.stopPropagation();
+                scrollCarousel("left");
+              }}
+              aria-label="Scroll left"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div
+              className="carousel-track-wrapper"
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
+              <div
+                className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
+                ref={carouselRef}
+                onScroll={updateScrollState}
+              >
+                {carouselLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="carousel-link"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {link.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+            <button
+              className="carousel-btn carousel-btn-right"
+              onClick={(e) => {
+                e.stopPropagation();
+                scrollCarousel("right");
+              }}
+              aria-label="Scroll right"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className={`read-more-button ${expanded ? "expanded" : ""}`}>

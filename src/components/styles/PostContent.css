@@ -69,11 +69,14 @@
   transition:
     background 0.2s ease,
     border-color 0.2s ease;
+  overflow: hidden;
 }
 
-.hello-card:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
+@media (hover: hover) {
+  .hello-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
 }
 
 .hello-card svg {
@@ -114,6 +117,8 @@
     opacity 0.3s ease,
     margin 0.4s ease;
   margin-top: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .expanded-content p {
@@ -126,9 +131,147 @@
 }
 
 .hello-card.expanded .expanded-content {
-  max-height: 200px;
+  max-height: 300px;
   opacity: 1;
   margin-top: 1rem;
+  overflow: hidden;
+}
+
+/* Carousel */
+.carousel-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.carousel-track-wrapper {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: calc(100% - 4rem);
+  overflow: visible;
+  touch-action: pan-x;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0.25rem 0;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%,
+    black 90%,
+    transparent
+  );
+}
+
+.carousel-track.at-start {
+  mask-image: linear-gradient(
+    to right,
+    black 90%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 90%,
+    transparent
+  );
+}
+
+.carousel-track.at-end {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10%
+  );
+}
+
+.carousel-track.at-start.at-end {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-link {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .carousel-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.35);
+  }
+}
+
+.carousel-btn {
+  flex: 0 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.carousel-container .carousel-btn svg {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+  flex-shrink: 0;
+  fill: none;
+}
+
+@media (hover: hover) {
+  .carousel-btn:hover {
+    color: white;
+  }
 }
 
 .read-more-button {

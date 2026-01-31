@@ -78,6 +78,7 @@ main {
   padding-left: 10%;
   padding-right: 10%;
   box-sizing: border-box;
+  gap: 3rem;
 }
 
 .HankImage {
@@ -299,6 +300,7 @@ a {
     align-items: center;
     padding: 2rem 0;
     overflow-y: auto;
+    gap: 0;
   }
 
   .HankCard {
