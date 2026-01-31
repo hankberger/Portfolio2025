@@ -56,7 +56,7 @@
 
 .hello-card {
   margin-top: 1rem;
-  padding: 1.5rem 2rem;
+  padding: 1rem 1rem 0;
   width: 100%;
   box-sizing: border-box;
   border-radius: 12px;
@@ -65,13 +65,21 @@
   backdrop-filter: blur(8px);
   opacity: 0;
   display: flex;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.hello-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .hello-card svg {
-  height: 2rem;
-  width: 2rem;
-  fill: #ffffff;
-  padding-right: 0.5rem;
+  height: 1.25rem;
+  width: 1.25rem;
+  fill: rgba(255, 255, 255, 0.747);
 }
 
 .hello-title {
@@ -83,6 +91,11 @@
   color: white;
 }
 
+.currently {
+  padding-left: 0.15rem;
+  color: rgba(255, 255, 255, 0.795);
+}
+
 .hello-sub {
   margin: 0;
   font-family: "DM Sans", sans-serif;
@@ -92,11 +105,88 @@
   color: white;
 }
 
-.horizontal-divider {
-  height: 2px;
-  background-color: rgba(255, 255, 255, 0.5);
-  width: 100%;
-  margin: 5px 0px;
+.expanded-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 0.4s ease,
+    opacity 0.3s ease,
+    margin 0.4s ease;
+  margin-top: 0;
+}
+
+.expanded-content p {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.hello-card.expanded .expanded-content {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: 1rem;
+}
+
+.read-more-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 0.25rem auto 0.25rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 400;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.read-more-button:hover {
+  color: white;
+}
+
+.chevron-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: -0.15rem;
+  animation:
+    bounce 1.5s ease-in-out infinite,
+    pulse-opacity 1.5s ease-in-out infinite;
+  transition: transform 0.3s ease;
+}
+
+.read-more-button.expanded .chevron-icon {
+  animation: none;
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes pulse-opacity {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* Medium screens (2000px and below) - smaller buttons in landscape */
@@ -134,13 +224,8 @@
   .post-content {
     width: 90%;
     margin: 2rem auto 0;
-    align-items: center;
     flex: none;
     flex-shrink: 0;
-  }
-
-  .content-section {
-    justify-content: center;
   }
 
   .social-button {
@@ -150,5 +235,10 @@
   .social-button svg {
     width: 2.5rem;
     height: 2.5rem;
+  }
+
+  .hello-card {
+    justify-content: flex-start;
+    align-items: flex-start;
   }
 }
