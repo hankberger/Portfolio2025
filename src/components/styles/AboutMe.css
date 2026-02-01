@@ -29,12 +29,12 @@
   padding: 0 1rem;
   width: 100%;
   box-sizing: border-box;
-  opacity: 0;
 }
 
 /* Tagline */
 .about-tagline {
   padding: 0.25rem 0 0.5rem;
+  opacity: 0;
 }
 
 .tagline-text {
@@ -48,6 +48,7 @@
 .about-description {
   margin-top: 0.5rem;
   margin-bottom: 1.25rem;
+  opacity: 0;
 }
 
 .about-description p {
@@ -81,6 +82,7 @@
   transition:
     background 0.2s ease,
     border-color 0.2s ease;
+  opacity: 0;
 }
 
 @media (hover: hover) {

@@ -372,3 +372,9 @@ a {
     font-size: 3.5rem;
   }
 }
+
+/* Enable scrolling when content is visible (all orientations) */
+.constraint.scrollable {
+  overflow-y: auto;
+  pointer-events: auto;
+}

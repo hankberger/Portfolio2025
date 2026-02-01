@@ -863,7 +863,7 @@ float bayerDither(vec2 pos) {
           height: "100vh",
           zIndex: 0,
           pointerEvents: "auto", // we listen for mousemove here
-          touchAction: "none",    // Prevent Safari touch gestures
+          touchAction: contentVisible ? "auto" : "none", // Allow touch scroll when content visible
           userSelect: "none",     // Prevent text selection interference
           WebkitUserSelect: "none", // Safari-prefixed version
         }}
@@ -871,7 +871,7 @@ float bayerDither(vec2 pos) {
 
       {/* UI layer (middle) */}
       <main>
-        <div className="constraint">
+        <div className={`constraint${contentVisible ? " scrollable" : ""}`}>
           <HankCard scatterCallback={scatterDaFish} onExpandChange={setContentVisible} />
           <PostContent visible={contentVisible} />
         </div>
