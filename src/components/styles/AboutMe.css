@@ -1,0 +1,138 @@
+.about-me {
+  width: 100%;
+}
+
+/* Section header */
+.about-me .section-header {
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 0 1rem 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+  opacity: 0;
+}
+
+.about-me .section-header svg {
+  height: 1.25rem;
+  width: 1.25rem;
+  fill: rgba(255, 255, 255, 0.747);
+}
+
+.about-me .currently {
+  padding-left: 0.15rem;
+  color: rgba(255, 255, 255, 0.795);
+}
+
+/* Main content area */
+.about-me-content {
+  padding: 0 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  opacity: 0;
+}
+
+/* Tagline */
+.about-tagline {
+  padding: 0.25rem 0 0.5rem;
+}
+
+.tagline-text {
+  font-family: "DM Sans", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+}
+
+.about-description {
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.about-description p {
+  margin: 0 0 0.75rem;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.about-description p:last-child {
+  margin-bottom: 0;
+}
+
+/* Skill details list */
+.skill-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skill-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .skill-detail:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.skill-detail-icon {
+  flex-shrink: 0;
+}
+
+.skill-detail-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.skill-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.skill-detail-label {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.skill-detail-desc {
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive adjustments */
+@media (orientation: portrait), (max-width: 1350px) {
+  .about-me .section-header {
+    margin-top: 1rem;
+    font-size: 1.25rem;
+  }
+
+  .about-me .section-header svg {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+
+  .tagline-text {
+    font-size: 1.2rem;
+  }
+}

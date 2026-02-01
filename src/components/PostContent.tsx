@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { animate, stagger, easings } from "animejs";
 import EmploymentCard from "./EmploymentCard";
+import AboutMe from "./AboutMe";
 import "./styles/PostContent.css";
 
 interface IPostContent {
@@ -186,23 +187,6 @@ export default function PostContent({ visible }: IPostContent) {
         ease: easings.eases.outQuart,
       } as any);
 
-      // Projects section fade in
-      animate(".section-header", {
-        opacity: [0, 1],
-        y: ["1rem", "0rem"],
-        delay: 700,
-        duration: 600,
-        ease: easings.eases.outQuart,
-      } as any);
-
-      // Skill pills fade in
-      animate(".skill-pill", {
-        opacity: [0, 1],
-        y: ["0.5rem", "0rem"],
-        delay: stagger(100, { start: 850 }),
-        duration: 400,
-        ease: easings.eases.outQuart,
-      } as any);
     }
 
     if (!visible) {
@@ -229,18 +213,7 @@ export default function PostContent({ visible }: IPostContent) {
         ))}
       </div>
       <EmploymentCard />
-
-      <div className="section-header">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z" />
-        </svg>
-        <div className="currently">About Me</div>
-      </div>
-      <div className="skill-pills">
-        <span className="skill-pill">Web</span>
-        <span className="skill-pill">Mobile</span>
-        <span className="skill-pill">Animation</span>
-      </div>
+      <AboutMe visible={visible} />
     </div>
   );
 }
