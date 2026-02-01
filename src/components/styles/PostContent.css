@@ -5,6 +5,8 @@
   pointer-events: auto;
   flex: 1;
   max-width: 600px;
+  align-self: flex-start;
+  padding-top: 35vh;
 }
 
 .content-section {
@@ -439,6 +441,7 @@
     margin: 2rem auto 0;
     flex: none;
     flex-shrink: 0;
+    padding-top: 0;
   }
 
   .social-button {

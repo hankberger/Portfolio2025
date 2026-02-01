@@ -69,6 +69,10 @@ main {
   pointer-events: none;
 }
 
+main.scrollable {
+  pointer-events: auto;
+}
+
 .constraint {
   height: 100%;
   width: 100%;

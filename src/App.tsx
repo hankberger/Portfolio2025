@@ -870,7 +870,7 @@ float bayerDither(vec2 pos) {
       />
 
       {/* UI layer (middle) */}
-      <main>
+      <main className={contentVisible ? "scrollable" : ""}>
         <div className={`constraint${contentVisible ? " scrollable" : ""}`}>
           <HankCard scatterCallback={scatterDaFish} onExpandChange={setContentVisible} />
           <PostContent visible={contentVisible} />
