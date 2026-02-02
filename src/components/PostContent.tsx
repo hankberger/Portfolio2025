@@ -186,7 +186,6 @@ export default function PostContent({ visible }: IPostContent) {
         duration: 600,
         ease: easings.eases.outQuart,
       } as any);
-
     }
 
     if (!visible) {

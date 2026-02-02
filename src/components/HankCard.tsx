@@ -82,6 +82,15 @@ export default function HankCard(props: IHankCard) {
 
   const toggle = async () => {
     hasToggled.current = true;
+
+    // Scroll to top instantly before collapsing (back to the fish)
+    if (bigButton) {
+      const container = document.querySelector(".constraint");
+      if (container) {
+        container.scrollTop = 0;
+      }
+    }
+
     scatterCallback(!bigButton);
     props.onExpandChange?.(!bigButton);
     // Fade out current button (moves down, mirrors the fade in)
