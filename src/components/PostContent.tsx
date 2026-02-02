@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { animate, stagger, easings } from "animejs";
 import EmploymentCard from "./EmploymentCard";
 import AboutMe from "./AboutMe";
@@ -7,34 +7,6 @@ import "./styles/PostContent.css";
 interface IPostContent {
   visible: boolean;
 }
-
-const projectItems = [
-  {
-    name: "Project 1",
-    image: "https://picsum.photos/seed/proj1/200/150",
-    url: "#",
-  },
-  {
-    name: "Project 2",
-    image: "https://picsum.photos/seed/proj2/200/150",
-    url: "#",
-  },
-  {
-    name: "Project 3",
-    image: "https://picsum.photos/seed/proj3/200/150",
-    url: "#",
-  },
-  {
-    name: "Project 4",
-    image: "https://picsum.photos/seed/proj4/200/150",
-    url: "#",
-  },
-  {
-    name: "Project 5",
-    image: "https://picsum.photos/seed/proj5/200/150",
-    url: "#",
-  },
-];
 
 const socialLinks = [
   {
@@ -77,87 +49,6 @@ const socialLinks = [
 
 export default function PostContent({ visible }: IPostContent) {
   const hasAnimated = useRef(false);
-  const projectsCarouselRef = useRef<HTMLDivElement>(null);
-  const [projectsScrollState, setProjectsScrollState] = useState({
-    atStart: true,
-    atEnd: false,
-  });
-  const [focusedProject, setFocusedProject] = useState(0);
-  const isScrollingRef = useRef(false);
-
-  const updateProjectsScrollState = () => {
-    if (projectsCarouselRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        projectsCarouselRef.current;
-      setProjectsScrollState({
-        atStart: scrollLeft <= 5,
-        atEnd: scrollLeft + clientWidth >= scrollWidth - 5,
-      });
-
-      // Only update focus from scroll if not programmatically scrolling
-      if (!isScrollingRef.current) {
-        const cards =
-          projectsCarouselRef.current.querySelectorAll(".project-card");
-        const containerCenter = scrollLeft + clientWidth / 2;
-        let closestIndex = 0;
-        let closestDistance = Infinity;
-
-        cards.forEach((card, index) => {
-          const cardElement = card as HTMLElement;
-          const cardCenter =
-            cardElement.offsetLeft + cardElement.offsetWidth / 2;
-          const distance = Math.abs(containerCenter - cardCenter);
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = index;
-          }
-        });
-
-        setFocusedProject(closestIndex);
-      }
-    }
-  };
-
-  const scrollProjectsCarousel = (direction: "left" | "right") => {
-    if (projectsCarouselRef.current) {
-      const cards =
-        projectsCarouselRef.current.querySelectorAll(".project-card");
-      const newIndex =
-        direction === "left"
-          ? Math.max(0, focusedProject - 1)
-          : Math.min(cards.length - 1, focusedProject + 1);
-
-      const targetCard = cards[newIndex] as HTMLElement;
-      if (targetCard) {
-        isScrollingRef.current = true;
-        setFocusedProject(newIndex);
-        targetCard.scrollIntoView({
-          behavior: "smooth",
-          inline: "center",
-          block: "nearest",
-        });
-        setTimeout(() => {
-          isScrollingRef.current = false;
-        }, 500);
-      }
-    }
-  };
-
-  // Center first project card on mount
-  useEffect(() => {
-    if (visible && projectsCarouselRef.current) {
-      const firstCard = projectsCarouselRef.current.querySelector(
-        ".project-card",
-      ) as HTMLElement;
-      if (firstCard) {
-        firstCard.scrollIntoView({
-          behavior: "instant",
-          inline: "center",
-          block: "nearest",
-        });
-      }
-    }
-  }, [visible]);
 
   useEffect(() => {
     if (visible && !hasAnimated.current) {
