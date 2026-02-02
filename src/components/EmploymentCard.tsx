@@ -1,14 +1,22 @@
 import { useRef, useState } from "react";
 
-const carouselLinks = [
+const carouselLinks: { name: string; url: string }[] = [
   {
-    name: "MyChart Bedside",
-    url: "https://www.epic.com/software/mychart-bedside",
+    name: "MyChart Bedside Overview",
+    url: "https://www.epicshare.org/share-and-learn/technologically-advanced-hospital-rooms",
   },
-  { name: "Epic Systems", url: "https://www.epic.com" },
-  { name: "Healthcare IT", url: "https://www.healthcareitnews.com" },
-  { name: "Patient Portal", url: "https://www.mychart.com" },
-  { name: "FHIR Standards", url: "https://www.hl7.org/fhir" },
+  {
+    name: "Blending Info + Entertainment",
+    url: "https://www.linkedin.com/pulse/meet-patients-where-eyes-already-roberta-schwartz-bf7sc/",
+  },
+  {
+    name: "3rd Party Hardware Integration",
+    url: "https://finance.yahoo.com/news/hellocare-ai-announces-integration-epic-113613202.html",
+  },
+  {
+    name: "Academic Medical Centers",
+    url: "https://www.mhealthfairview.org/resources/mychart-bedside",
+  },
 ];
 
 export default function EmploymentCard() {
