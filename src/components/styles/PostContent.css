@@ -427,11 +427,22 @@
 }
 
 .project-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.75rem 1rem;
   color: rgba(255, 255, 255, 0.85);
   font-family: "DM Sans", sans-serif;
   font-size: 1rem;
   font-weight: 500;
+}
+
+.project-link-icon {
+  width: 0.9em;
+  height: 0.9em;
+  margin-top: 0.15em;
+  fill: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
 }
 
 @media (hover: hover) {

@@ -15,6 +15,7 @@ const projects = [
     tags: ["Three.js", "Web", "Animation"],
     gradient: "linear-gradient(135deg, #667eea, #764ba2)",
     image: "/pathplanning.webp",
+    link: "https://hankberger.github.io/PathPlanningThreeJS/",
   },
   {
     id: "project-2",
@@ -23,6 +24,7 @@ const projects = [
     tags: ["Web", "Design"],
     gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
     image: "/portfolio2022.webp",
+    link: "https://portfolio2022.hanksberger.workers.dev/",
   },
   {
     id: "project-3",
@@ -30,6 +32,7 @@ const projects = [
     description: "Real-time audio reactive geometry with FFT analysis",
     tags: ["Web Audio", "Three.js", "GLSL"],
     gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
+    link: "",
   },
   {
     id: "project-4",
@@ -37,6 +40,7 @@ const projects = [
     description: "Infinite terrain generation with marching cubes algorithm",
     tags: ["Rust", "WebAssembly", "Three.js"],
     gradient: "linear-gradient(135deg, #43e97b, #38f9d7)",
+    link: "",
   },
   {
     id: "project-5",
@@ -44,6 +48,7 @@ const projects = [
     description: "Real-time signed distance field renderer in the browser",
     tags: ["GLSL", "React", "SDF"],
     gradient: "linear-gradient(135deg, #fa709a, #fee140)",
+    link: "",
   },
 ];
 
@@ -237,8 +242,12 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                 key={project.id}
                 className="project-card"
                 onClick={() => {
-                  flushSync(() => setFocusedIndex(i));
-                  requestAnimationFrame(() => scrollToIndex(i));
+                  if (focusedIndex === i && project.link) {
+                    window.open(project.link, "_blank", "noopener,noreferrer");
+                  } else {
+                    flushSync(() => setFocusedIndex(i));
+                    requestAnimationFrame(() => scrollToIndex(i));
+                  }
                 }}
               >
                 <div
@@ -250,7 +259,14 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                   )}
                 </div>
                 <div className="project-card-info">
-                  <div className="project-name">{project.name}</div>
+                  <div className="project-name">
+                    {project.name}
+                    {project.link && (
+                      <svg className="project-link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+                      </svg>
+                    )}
+                  </div>
                   <div className="project-description">
                     {project.description}
                   </div>
