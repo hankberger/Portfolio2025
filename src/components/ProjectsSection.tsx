@@ -10,9 +10,9 @@ interface IProjectsSection {
 const projects = [
   {
     id: "project-1",
-    name: "3D Fish Pond",
-    description: "Interactive WebGL experience with custom dithering shaders",
-    tags: ["Three.js", "GLSL", "React"],
+    name: "Motion Planning",
+    description: "Agents navigating dynamic obstacles in real-time 3D",
+    tags: ["Three.js", "Web", "Animation"],
     gradient: "linear-gradient(135deg, #667eea, #764ba2)",
     image: "/pathplanning.webp",
   },
@@ -224,8 +224,6 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
 
         <div
           className="carousel-track-wrapper"
-          onTouchStart={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
         >
           <div
             className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
@@ -250,16 +248,18 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                     <img src={project.image} alt={project.name} />
                   )}
                 </div>
-                <div className="project-name">{project.name}</div>
-                <div className="project-description">
-                  {project.description}
-                </div>
-                <div className="project-tags">
-                  {project.tags.map((tag) => (
-                    <span key={tag} className="project-tag">
-                      {tag}
-                    </span>
-                  ))}
+                <div className="project-card-info">
+                  <div className="project-name">{project.name}</div>
+                  <div className="project-description">
+                    {project.description}
+                  </div>
+                  <div className="project-tags">
+                    {project.tags.map((tag) => (
+                      <span key={tag} className="project-tag">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}

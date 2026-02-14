@@ -157,7 +157,7 @@
   min-width: 0;
   max-width: calc(100% - 4rem);
   overflow: visible;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
 }
 
 .carousel-track {
@@ -169,7 +169,7 @@
   -ms-overflow-style: none;
   padding: 0.25rem 0;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
   mask-image: linear-gradient(
     to right,
     transparent,
@@ -387,21 +387,21 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  height: 360px;
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   text-decoration: none;
-  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease, box-shadow 0.15s ease;
+  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.15s ease;
   opacity: 0.4;
   transform: scale(0.82) translateZ(-100px);
+  will-change: transform, opacity;
 }
 
 .project-card.focused {
   opacity: 1;
   border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(12px);
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.1), 0 4px 16px rgba(0, 0, 0, 0.3);
   color: white;
 }
@@ -421,7 +421,7 @@
 
 .project-card img {
   width: 100%;
-  aspect-ratio: 7 / 5;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -436,7 +436,6 @@
 
 @media (hover: hover) {
   .project-card:hover {
-    background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.3);
   }
 }
@@ -494,5 +493,9 @@
   .hello-card {
     justify-content: flex-start;
     align-items: flex-start;
+  }
+
+  .project-card {
+    height: 220px;
   }
 }

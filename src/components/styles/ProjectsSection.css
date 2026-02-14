@@ -79,14 +79,13 @@
   width: 290px;
   min-width: 290px;
   cursor: pointer;
+  position: relative;
 }
 
-/* Placeholder gradient images */
+/* Full-height image background */
 .project-card-image {
-  width: 100%;
-  aspect-ratio: 7 / 5;
-  display: block;
-  flex-shrink: 0;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
 }
 
@@ -95,6 +94,16 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Glass info overlay at the bottom */
+.project-card-info {
+  position: relative;
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Responsive adjustments */
@@ -110,7 +119,8 @@
   }
 
   .project-card {
-    width: 200px;
-    min-width: 200px;
+    width: 160px;
+    min-width: 160px;
+    height: 220px;
   }
 }

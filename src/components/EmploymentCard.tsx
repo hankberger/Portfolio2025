@@ -90,8 +90,6 @@ export default function EmploymentCard() {
           <div
             className="carousel-track-wrapper"
             onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
           >
             <div
               className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
