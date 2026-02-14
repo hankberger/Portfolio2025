@@ -82,6 +82,10 @@
   }
 }
 
+.hello-card .row {
+  gap: 0.2rem;
+}
+
 .hello-card svg {
   height: 1.25rem;
   width: 1.25rem;
@@ -357,35 +361,67 @@
 }
 
 .projects-carousel-container .carousel-track {
-  scroll-snap-type: x mandatory;
-  scroll-padding: 0 50%;
   gap: 1rem;
+  scroll-snap-type: none;
+  perspective: 800px;
+  position: relative;
+  padding-top: 0.65rem;
+  padding-bottom: 1.5rem;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 7%,
+    black 93%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 7%,
+    black 93%,
+    transparent
+  );
 }
 
 .project-card {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   text-decoration: none;
-  transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
-  scroll-snap-align: center;
-  opacity: 0.5;
-  transform: scale(0.9);
+  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease, box-shadow 0.15s ease;
+  opacity: 0.4;
+  transform: scale(0.82) translateZ(-100px);
 }
 
 .project-card.focused {
   opacity: 1;
-  transform: scale(1);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.1), 0 4px 16px rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+.project-card.focused .project-name {
+  color: white;
+}
+
+.project-card.focused .project-description {
+  color: white;
+}
+
+.project-card.focused .project-tag {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .project-card img {
-  width: 280px;
-  height: 200px;
+  width: 100%;
+  aspect-ratio: 7 / 5;
   object-fit: cover;
   display: block;
 }

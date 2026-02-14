@@ -1,0 +1,287 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { animate, stagger, easings } from "animejs";
+import "./styles/ProjectsSection.css";
+
+interface IProjectsSection {
+  visible: boolean;
+}
+
+const projects = [
+  {
+    id: "project-1",
+    name: "3D Fish Pond",
+    description: "Interactive WebGL experience with custom dithering shaders",
+    tags: ["Three.js", "GLSL", "React"],
+    gradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    image: "/pathplanning.webp",
+  },
+  {
+    id: "project-2",
+    name: "Particle System",
+    description: "GPU-accelerated particle simulation with compute shaders",
+    tags: ["WebGPU", "WGSL", "TypeScript"],
+    gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
+  },
+  {
+    id: "project-3",
+    name: "Audio Visualizer",
+    description: "Real-time audio reactive geometry with FFT analysis",
+    tags: ["Web Audio", "Three.js", "GLSL"],
+    gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
+  },
+  {
+    id: "project-4",
+    name: "Procedural Terrain",
+    description: "Infinite terrain generation with marching cubes algorithm",
+    tags: ["Rust", "WebAssembly", "Three.js"],
+    gradient: "linear-gradient(135deg, #43e97b, #38f9d7)",
+  },
+  {
+    id: "project-5",
+    name: "Ray Marcher",
+    description: "Real-time signed distance field renderer in the browser",
+    tags: ["GLSL", "React", "SDF"],
+    gradient: "linear-gradient(135deg, #fa709a, #fee140)",
+  },
+];
+
+export default function ProjectsSection({ visible }: IProjectsSection) {
+  const hasAnimated = useRef(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [focusedIndex, setFocusedIndex] = useState(0);
+  const [scrollState, setScrollState] = useState({
+    atStart: true,
+    atEnd: false,
+  });
+
+  const focusedRef = useRef(0);
+  const snapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSnapping = useRef(false);
+
+  const updateTrackPadding = useCallback(() => {
+    if (!carouselRef.current) return;
+    const track = carouselRef.current;
+    const card = track.querySelector(".project-card") as HTMLElement | null;
+    if (!card) return;
+    const pad = (track.clientWidth - card.offsetWidth) / 2;
+    const left = track.querySelector(".carousel-spacer-left") as HTMLElement | null;
+    const right = track.querySelector(".carousel-spacer-right") as HTMLElement | null;
+    if (left) left.style.minWidth = `${pad}px`;
+    if (right) right.style.minWidth = `${pad}px`;
+  }, []);
+
+  const updateCardScales = useCallback(() => {
+    if (!carouselRef.current) return;
+    const track = carouselRef.current;
+    const trackRect = track.getBoundingClientRect();
+    const trackCenter = trackRect.left + trackRect.width / 2;
+    const cards = track.querySelectorAll(".project-card") as NodeListOf<HTMLElement>;
+
+    let closestIndex = 0;
+    let closestDist = Infinity;
+
+    cards.forEach((card, i) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const dist = Math.abs(cardCenter - trackCenter);
+      const maxDist = trackRect.width / 2;
+      const t = Math.min(dist / maxDist, 1);
+
+      card.style.scale = String(1.05 - t * 0.23);
+      card.style.translate = `0 0 ${-t * 100}px`;
+      card.style.opacity = String(1 - t * 0.6);
+
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIndex = i;
+      }
+    });
+
+    if (closestIndex !== focusedRef.current) {
+      focusedRef.current = closestIndex;
+      setFocusedIndex(closestIndex);
+    }
+  }, []);
+
+  const scrollToIndex = useCallback((index: number) => {
+    if (!carouselRef.current) return;
+    const track = carouselRef.current;
+    const cards = track.querySelectorAll(".project-card");
+    const card = cards[index] as HTMLElement | undefined;
+    if (!card) return;
+    const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+    const scrollTarget = cardCenter - track.clientWidth / 2;
+    track.scrollTo({ left: scrollTarget, behavior: "smooth" });
+  }, []);
+
+  const snapToNearest = useCallback(() => {
+    if (!carouselRef.current) return;
+    isSnapping.current = true;
+    scrollToIndex(focusedRef.current);
+    setTimeout(() => { isSnapping.current = false; }, 400);
+  }, [scrollToIndex]);
+
+  const updateScrollState = useCallback(() => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+    setScrollState({
+      atStart: scrollLeft <= 5,
+      atEnd: scrollLeft + clientWidth >= scrollWidth - 5,
+    });
+    updateCardScales();
+
+    // Debounce snap — when scrolling stops, lock to nearest card
+    if (!isSnapping.current) {
+      if (snapTimer.current) clearTimeout(snapTimer.current);
+      snapTimer.current = setTimeout(snapToNearest, 100);
+    }
+  }, [updateCardScales, snapToNearest]);
+
+  const selectCard = (direction: "left" | "right") => {
+    const next = direction === "left"
+      ? Math.max(0, focusedIndex - 1)
+      : Math.min(projects.length - 1, focusedIndex + 1);
+    flushSync(() => setFocusedIndex(next));
+    requestAnimationFrame(() => scrollToIndex(next));
+  };
+
+  useEffect(() => {
+    if (visible && !hasAnimated.current) {
+      hasAnimated.current = true;
+
+      animate(".projects-section .section-header", {
+        opacity: [0, 1],
+        y: ["1rem", "0rem"],
+        delay: 600,
+        duration: 600,
+        ease: easings.eases.outQuart,
+      } as any);
+
+      animate(".projects-section .section-rule", {
+        scaleX: [0, 1],
+        delay: 650,
+        duration: 700,
+        ease: easings.eases.outQuart,
+      } as any);
+
+      animate(".project-card", {
+        y: ["1rem", "0rem"],
+        delay: stagger(80, { start: 700 }),
+        duration: 500,
+        ease: easings.eases.outQuart,
+      } as any);
+    }
+
+    if (!visible) {
+      hasAnimated.current = false;
+    }
+  }, [visible]);
+
+  // Set track padding and apply initial scales on mount + resize
+  useEffect(() => {
+    if (!visible) return;
+    updateTrackPadding();
+    scrollToIndex(0);
+    updateCardScales();
+    const onResize = () => {
+      updateTrackPadding();
+      updateCardScales();
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, [visible, scrollToIndex, updateCardScales, updateTrackPadding]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="projects-section">
+      <div className="section-header">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
+        </svg>
+        <div className="currently">Projects</div>
+        <div className="section-rule" />
+      </div>
+
+      <div className="projects-carousel-container">
+        <button
+          className="carousel-btn carousel-btn-left"
+          onClick={() => selectCard("left")}
+          aria-label="Scroll left"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+
+        <div
+          className="carousel-track-wrapper"
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+        >
+          <div
+            className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
+            ref={carouselRef}
+            onScroll={updateScrollState}
+          >
+            <div className="carousel-spacer-left" />
+            {projects.map((project, i) => (
+              <div
+                key={project.id}
+                className="project-card"
+                onClick={() => {
+                  flushSync(() => setFocusedIndex(i));
+                  requestAnimationFrame(() => scrollToIndex(i));
+                }}
+              >
+                <div
+                  className="project-card-image"
+                  style={project.image ? undefined : { background: project.gradient }}
+                >
+                  {project.image && (
+                    <img src={project.image} alt={project.name} />
+                  )}
+                </div>
+                <div className="project-name">{project.name}</div>
+                <div className="project-description">
+                  {project.description}
+                </div>
+                <div className="project-tags">
+                  {project.tags.map((tag) => (
+                    <span key={tag} className="project-tag">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div className="carousel-spacer-right" />
+          </div>
+        </div>
+
+        <button
+          className="carousel-btn carousel-btn-right"
+          onClick={() => selectCard("right")}
+          aria-label="Scroll right"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}

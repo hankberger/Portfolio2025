@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { animate, stagger, easings } from "animejs";
 import EmploymentCard from "./EmploymentCard";
+import ProjectsSection from "./ProjectsSection";
 import AboutMe from "./AboutMe";
 import "./styles/PostContent.css";
 
@@ -104,6 +105,7 @@ export default function PostContent({ visible }: IPostContent) {
       </div>
       <EmploymentCard />
       <AboutMe visible={visible} />
+      <ProjectsSection visible={visible} />
     </div>
   );
 }
