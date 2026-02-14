@@ -19,36 +19,22 @@ const projects = [
   },
   {
     id: "project-2",
+    name: "Gaussian Splatting",
+    description: "Mobile app for generating Gaussian splats from your phone",
+    tags: ["Mobile", "Python"],
+    gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
+    image: "/splatapp.webp",
+    video: true,
+    link: "https://assets.h4nk.com/splatapp.mp4",
+  },
+  {
+    id: "project-3",
     name: "2022 Portfolio",
     description: "My previous portfolio site for showing off coding and art",
     tags: ["Web", "Design"],
     gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
     image: "/portfolio2022.webp",
     link: "https://portfolio2022.hanksberger.workers.dev/",
-  },
-  {
-    id: "project-3",
-    name: "Audio Visualizer",
-    description: "Real-time audio reactive geometry with FFT analysis",
-    tags: ["Web Audio", "Three.js", "GLSL"],
-    gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
-    link: "",
-  },
-  {
-    id: "project-4",
-    name: "Procedural Terrain",
-    description: "Infinite terrain generation with marching cubes algorithm",
-    tags: ["Rust", "WebAssembly", "Three.js"],
-    gradient: "linear-gradient(135deg, #43e97b, #38f9d7)",
-    link: "",
-  },
-  {
-    id: "project-5",
-    name: "Ray Marcher",
-    description: "Real-time signed distance field renderer in the browser",
-    tags: ["GLSL", "React", "SDF"],
-    gradient: "linear-gradient(135deg, #fa709a, #fee140)",
-    link: "",
   },
 ];
 
@@ -71,8 +57,12 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
     const card = track.querySelector(".project-card") as HTMLElement | null;
     if (!card) return;
     const pad = (track.clientWidth - card.offsetWidth) / 2;
-    const left = track.querySelector(".carousel-spacer-left") as HTMLElement | null;
-    const right = track.querySelector(".carousel-spacer-right") as HTMLElement | null;
+    const left = track.querySelector(
+      ".carousel-spacer-left",
+    ) as HTMLElement | null;
+    const right = track.querySelector(
+      ".carousel-spacer-right",
+    ) as HTMLElement | null;
     if (left) left.style.minWidth = `${pad}px`;
     if (right) right.style.minWidth = `${pad}px`;
   }, []);
@@ -82,7 +72,9 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
     const track = carouselRef.current;
     const trackRect = track.getBoundingClientRect();
     const trackCenter = trackRect.left + trackRect.width / 2;
-    const cards = track.querySelectorAll(".project-card") as NodeListOf<HTMLElement>;
+    const cards = track.querySelectorAll(
+      ".project-card",
+    ) as NodeListOf<HTMLElement>;
 
     let closestIndex = 0;
     let closestDist = Infinity;
@@ -125,7 +117,9 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
     if (!carouselRef.current) return;
     isSnapping.current = true;
     scrollToIndex(focusedRef.current);
-    setTimeout(() => { isSnapping.current = false; }, 400);
+    setTimeout(() => {
+      isSnapping.current = false;
+    }, 400);
   }, [scrollToIndex]);
 
   const updateScrollState = useCallback(() => {
@@ -145,9 +139,10 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
   }, [updateCardScales, snapToNearest]);
 
   const selectCard = (direction: "left" | "right") => {
-    const next = direction === "left"
-      ? Math.max(0, focusedIndex - 1)
-      : Math.min(projects.length - 1, focusedIndex + 1);
+    const next =
+      direction === "left"
+        ? Math.max(0, focusedIndex - 1)
+        : Math.min(projects.length - 1, focusedIndex + 1);
     flushSync(() => setFocusedIndex(next));
     requestAnimationFrame(() => scrollToIndex(next));
   };
@@ -228,9 +223,7 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
           </svg>
         </button>
 
-        <div
-          className="carousel-track-wrapper"
-        >
+        <div className="carousel-track-wrapper">
           <div
             className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
             ref={carouselRef}
@@ -252,7 +245,9 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
               >
                 <div
                   className="project-card-image"
-                  style={project.image ? undefined : { background: project.gradient }}
+                  style={
+                    project.image ? undefined : { background: project.gradient }
+                  }
                 >
                   {project.image && (
                     <img src={project.image} alt={project.name} />
@@ -262,7 +257,11 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                   <div className="project-name">
                     {project.name}
                     {project.link && (
-                      <svg className="project-link-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                      <svg
+                        className="project-link-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
                       </svg>
                     )}
