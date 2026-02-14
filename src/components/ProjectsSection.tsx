@@ -154,21 +154,29 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
       animate(".projects-section .section-header", {
         opacity: [0, 1],
         y: ["1rem", "0rem"],
-        delay: 600,
+        delay: 900,
         duration: 600,
         ease: easings.eases.outQuart,
       } as any);
 
       animate(".projects-section .section-rule", {
         scaleX: [0, 1],
-        delay: 650,
+        delay: 950,
         duration: 700,
+        ease: easings.eases.outQuart,
+      } as any);
+
+      animate(".projects-carousel-container", {
+        opacity: [0, 1],
+        y: ["1rem", "0rem"],
+        delay: 900,
+        duration: 600,
         ease: easings.eases.outQuart,
       } as any);
 
       animate(".project-card", {
         y: ["1rem", "0rem"],
-        delay: stagger(80, { start: 700 }),
+        delay: stagger(80, { start: 1000 }),
         duration: 500,
         ease: easings.eases.outQuart,
       } as any);
@@ -262,7 +270,11 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                       >
-                        <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+                        {project.video ? (
+                          <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
+                        ) : (
+                          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
+                        )}
                       </svg>
                     )}
                   </div>

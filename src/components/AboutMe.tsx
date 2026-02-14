@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef } from "react";
-import { animate, stagger, easings } from "animejs";
+import { animate, easings } from "animejs";
 import "./styles/AboutMe.css";
 
 interface IAboutMe {
@@ -41,23 +41,23 @@ export default function AboutMe({ visible }: IAboutMe) {
 
       animate(".about-me .section-rule", {
         scaleX: [0, 1],
-        delay: 750,
-        duration: 700,
+        delay: 700,
+        duration: 600,
         ease: easings.eases.outQuart,
       } as any);
 
       animate(".about-me .skill-detail, .about-me .skill-divider", {
         opacity: [0, 1],
         y: ["0.75rem", "0rem"],
-        delay: stagger(80, { start: 800 }),
-        duration: 500,
+        delay: 700,
+        duration: 600,
         ease: easings.eases.outQuart,
       } as any);
 
       animate(".about-me .about-description", {
         opacity: [0, 1],
         y: ["1rem", "0rem"],
-        delay: 1200,
+        delay: 700,
         duration: 600,
         ease: easings.eases.outQuart,
       } as any);

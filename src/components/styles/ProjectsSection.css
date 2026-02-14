@@ -68,6 +68,11 @@
   white-space: nowrap;
 }
 
+/* Carousel container — hidden until fade-in animation */
+.projects-carousel-container {
+  opacity: 0;
+}
+
 /* Spacers so edge cards can scroll to center (sized by JS) */
 .carousel-spacer-left,
 .carousel-spacer-right {
