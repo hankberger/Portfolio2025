@@ -18,10 +18,11 @@ const projects = [
   },
   {
     id: "project-2",
-    name: "Particle System",
-    description: "GPU-accelerated particle simulation with compute shaders",
-    tags: ["WebGPU", "WGSL", "TypeScript"],
+    name: "2022 Portfolio",
+    description: "My previous portfolio site for showing off coding and art",
+    tags: ["Web", "Design"],
     gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
+    image: "/portfolio2022.webp",
   },
   {
     id: "project-3",
