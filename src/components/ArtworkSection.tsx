@@ -71,6 +71,7 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
   const focusedRef = useRef(0);
   const snapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSnapping = useRef(false);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const updateTrackPadding = useCallback(() => {
     if (!carouselRef.current) return;
@@ -216,6 +217,18 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
     }
   }, [visible]);
 
+  // Play only the focused video, pause the rest
+  useEffect(() => {
+    videoRefs.current.forEach((video, i) => {
+      if (!video) return;
+      if (i === focusedIndex) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
+  }, [focusedIndex]);
+
   // Set track padding and apply initial scales on mount + resize
   useEffect(() => {
     if (!visible) return;
@@ -296,8 +309,11 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
                 }}
               >
                 <video
+                  ref={(el) => {
+                    videoRefs.current[i] = el;
+                  }}
                   src={artwork.video}
-                  autoPlay
+                  autoPlay={i === 0}
                   loop
                   muted
                   playsInline
