@@ -38,36 +38,6 @@
   transform: scaleX(0);
 }
 
-/* Artwork card description */
-.artwork-description {
-  padding: 0 1rem 0.75rem;
-  font-family: "DM Sans", sans-serif;
-  font-size: 0.8rem;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.4;
-}
-
-/* Tech tag pills */
-.artwork-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0 1rem 0.75rem;
-}
-
-.artwork-tag {
-  padding: 0.2rem 0.5rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  font-family: "DM Sans", sans-serif;
-  font-size: 0.65rem;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
-  white-space: nowrap;
-}
-
 /* Carousel container — hidden until fade-in animation */
 .artwork-carousel-container {
   opacity: 0;
@@ -81,28 +51,12 @@
   position: relative;
 }
 
-/* Full-height image background */
-.artwork-card-image {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
-.artwork-card-image img {
+/* Video fills card */
+.artwork-card-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-/* Glass info overlay at the bottom */
-.artwork-card-info {
-  position: relative;
-  margin-top: auto;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Responsive adjustments */

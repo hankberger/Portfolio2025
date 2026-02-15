@@ -129,6 +129,37 @@
 
         document.head.appendChild(v);
       });
+
+      // Preload artwork videos after page load (lower priority than hero videos + fish model)
+      window.addEventListener("load", () => {
+        const artSources = [
+          "/art/HankBerger0.mp4",
+          "/art/HankBerger1.mp4",
+          "/art/HankBerger2.mp4",
+          "/art/HankBerger3.mp4",
+          "/art/HankBerger4.mp4",
+          "/art/HankBerger5.mp4",
+          "/art/HankBerger6.mp4",
+          "/art/HankBerger7.mp4",
+        ];
+
+        let i = 0;
+        function preloadNext() {
+          if (i >= artSources.length) return;
+          const v = document.createElement("video");
+          v.src = artSources[i++];
+          v.muted = true;
+          v.preload = "auto";
+          v.playsInline = true;
+          v.fetchPriority = "low";
+          v.style.display = "none";
+          v.addEventListener("canplaythrough", preloadNext, { once: true });
+          // fallback in case canplaythrough never fires
+          setTimeout(preloadNext, 3000);
+          document.head.appendChild(v);
+        }
+        preloadNext();
+      });
     </script>
 
     <!-- Structured Data (JSON-LD) -->

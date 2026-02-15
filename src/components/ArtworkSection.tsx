@@ -8,33 +8,14 @@ interface IArtworkSection {
 }
 
 const artworks = [
-  {
-    id: "artwork-1",
-    name: "Artwork One",
-    description: "Placeholder description for first artwork piece",
-    tags: ["Digital", "3D"],
-    gradient: "linear-gradient(135deg, #667eea, #764ba2)",
-    image: "",
-    link: "",
-  },
-  {
-    id: "artwork-2",
-    name: "Artwork Two",
-    description: "Placeholder description for second artwork piece",
-    tags: ["Illustration", "Concept"],
-    gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
-    image: "",
-    link: "",
-  },
-  {
-    id: "artwork-3",
-    name: "Artwork Three",
-    description: "Placeholder description for third artwork piece",
-    tags: ["Painting", "Mixed Media"],
-    gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
-    image: "",
-    link: "",
-  },
+  { id: "artwork-0", video: "/art/HankBerger0.mp4" },
+  { id: "artwork-1", video: "/art/HankBerger1.mp4" },
+  { id: "artwork-2", video: "/art/HankBerger2.mp4" },
+  { id: "artwork-3", video: "/art/HankBerger3.mp4" },
+  { id: "artwork-4", video: "/art/HankBerger4.mp4" },
+  { id: "artwork-5", video: "/art/HankBerger5.mp4" },
+  { id: "artwork-6", video: "/art/HankBerger6.mp4" },
+  { id: "artwork-7", video: "/art/HankBerger7.mp4" },
 ];
 
 export default function ArtworkSection({ visible }: IArtworkSection) {
@@ -242,48 +223,20 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
                 key={artwork.id}
                 className="artwork-card"
                 onClick={() => {
-                  if (focusedIndex === i && artwork.link) {
-                    window.open(artwork.link, "_blank", "noopener,noreferrer");
-                  } else {
+                  if (focusedIndex !== i) {
                     flushSync(() => setFocusedIndex(i));
                     requestAnimationFrame(() => scrollToIndex(i));
                   }
                 }}
               >
-                <div
-                  className="artwork-card-image"
-                  style={
-                    artwork.image ? undefined : { background: artwork.gradient }
-                  }
-                >
-                  {artwork.image && (
-                    <img src={artwork.image} alt={artwork.name} />
-                  )}
-                </div>
-                <div className="artwork-card-info">
-                  <div className="artwork-name">
-                    {artwork.name}
-                    {artwork.link && (
-                      <svg
-                        className="artwork-link-icon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="artwork-description">
-                    {artwork.description}
-                  </div>
-                  <div className="artwork-tags">
-                    {artwork.tags.map((tag) => (
-                      <span key={tag} className="artwork-tag">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <video
+                  src={artwork.video}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="artwork-card-video"
+                />
               </div>
             ))}
             <div className="carousel-spacer-right" />
