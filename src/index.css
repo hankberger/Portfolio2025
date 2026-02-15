@@ -30,14 +30,14 @@ body {
 @media (orientation: portrait), (max-width: 1350px) {
   html,
   body {
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
 @media (max-width: 400px) {
   html,
   body {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 

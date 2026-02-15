@@ -123,9 +123,37 @@
     width: 1.5rem;
   }
 
+  .projects-carousel-container {
+    position: relative;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .projects-carousel-container .carousel-btn {
+    position: absolute !important;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    flex: none !important;
+  }
+
+  .projects-carousel-container .carousel-btn-left {
+    left: 0.25rem;
+  }
+
+  .projects-carousel-container .carousel-btn-right {
+    right: 0.25rem;
+  }
+
+  .projects-carousel-container .carousel-track-wrapper {
+    max-width: 100% !important;
+    width: 100%;
+  }
+
   .project-card {
-    width: 160px;
-    min-width: 160px;
-    height: 220px;
+    width: clamp(160px, calc(100vw - 14rem), 240px);
+    min-width: clamp(160px, calc(100vw - 14rem), 240px);
+    aspect-ratio: 160 / 250;
+    height: auto !important;
   }
 }
