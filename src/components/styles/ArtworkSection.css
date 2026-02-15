@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   margin-top: 1.5rem;
-  padding: 0 1rem 0.75rem;
+  padding: 0 1rem 0.25rem;
   width: 100%;
   box-sizing: border-box;
   opacity: 0;
@@ -36,6 +36,42 @@
   );
   transform-origin: left center;
   transform: scaleX(0);
+}
+
+/* Tools row */
+.artwork-tools {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem 0.25rem;
+}
+
+.artwork-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: "DM Sans", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  opacity: 0;
+}
+
+.artwork-tool-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.artwork-tool-icon svg {
+  height: 0.8rem;
+  width: 0.8rem;
+}
+
+.artwork-tool-divider {
+  width: 1px;
+  height: 0.75rem;
+  margin: 0 0.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 0;
 }
 
 /* Carousel container — hidden until fade-in animation */
@@ -69,6 +105,10 @@
   .artwork-section .section-header svg {
     height: 1.5rem;
     width: 1.5rem;
+  }
+
+  .artwork-tool {
+    font-size: 0.9rem;
   }
 
   .artwork-carousel-container {
