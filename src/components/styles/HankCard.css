@@ -184,20 +184,9 @@ a {
 }
 
 .getStarted {
-  display: flex;
   width: fit-content;
-  font-size: 1rem;
-  align-items: center;
-  justify-content: center;
-  background-color: transparent;
-  border: 1px solid white;
-  border-radius: 5px;
-  color: white;
-  font-family: "DM Sans", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 300;
+  height: auto;
   padding: 10px 20px;
-  cursor: pointer;
   gap: 1px;
   pointer-events: auto;
   margin-top: 0.5rem;

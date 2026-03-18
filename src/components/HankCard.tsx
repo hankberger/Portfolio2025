@@ -180,9 +180,7 @@ export default function HankCard(props: IHankCard) {
         <div className="column">
           <h1>HANK BERGER</h1>
           <h2>Developer & Motion Designer </h2>
-          <div
-            role="button"
-            tabIndex={0}
+          <button
             className={`getStarted${bigButton ? " active" : ""}`}
             onClick={toggle}
           >
@@ -218,7 +216,7 @@ export default function HankCard(props: IHankCard) {
                 </>
               )}
             </span>
-          </div>
+          </button>
         </div>
       </div>
     </div>
