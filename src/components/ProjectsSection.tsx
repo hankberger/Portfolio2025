@@ -20,7 +20,7 @@ const projects = [
   {
     id: "project-2",
     name: "Gaussian Splatting",
-    description: "Mobile app for generating Gaussian splats from your phone",
+    description: "Mobile app for capturing 3D scenes from your phone",
     tags: ["Mobile", "Python"],
     gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
     image: "/splatapp.webp",

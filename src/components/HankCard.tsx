@@ -179,7 +179,7 @@ export default function HankCard(props: IHankCard) {
         </div>
         <div className="column">
           <h1>HANK BERGER</h1>
-          <h2>Developer & Artist </h2>
+          <h2>Developer & Motion Designer </h2>
           <div
             role="button"
             tabIndex={0}
