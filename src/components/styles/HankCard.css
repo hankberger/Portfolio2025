@@ -186,11 +186,12 @@ a {
 .getStarted {
   width: fit-content;
   height: auto;
-  padding: 10px 20px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
   gap: 1px;
   pointer-events: auto;
   margin-top: 0.5rem;
-  border-radius: 12px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.85);
@@ -213,11 +214,20 @@ a {
 }
 
 .getStarted.active {
+  background: transparent;
+  border: 1px solid transparent;
+  backdrop-filter: none;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
-  padding: 10px 20px;
+  padding: 10px 0;
   margin-left: 0;
+}
+
+.getStarted.active:hover {
+  background: transparent;
+  border-color: transparent;
+  transform: none;
 }
 
 .buttonContent {
