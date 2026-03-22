@@ -17,6 +17,7 @@ function App() {
   const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [showPointerHint, setShowPointerHint] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
   const pointerHintFadingRef = useRef(false);
   const scatterRef = useRef(false);
   const hasMouseInputRef = useRef(false);
@@ -827,6 +828,43 @@ float bayerDither(vec2 pos) {
     };
   }, []);
 
+  // Delay enabling scroll until content is fully rendered and laid out.
+  // On mobile Safari, touch scroll bounds are cached at gesture start — if we enable
+  // scroll the same frame the content mounts, the browser uses stale (near-zero)
+  // scrollHeight, causing the scrollbar thumb to fill ~90% of the track.
+  useEffect(() => {
+    if (contentVisible) {
+      let cancelled = false;
+      // Wait two frames: frame 1 = React DOM commit, frame 2 = browser layout + paint
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!cancelled) setScrollEnabled(true);
+        });
+      });
+      return () => { cancelled = true; };
+    } else {
+      setScrollEnabled(false);
+    }
+  }, [contentVisible]);
+
+  // Forward wheel events from bg canvas to the scroll container when content is visible
+  useEffect(() => {
+    if (!scrollEnabled) return;
+    const bgCanvas = bgCanvasRef.current;
+    if (!bgCanvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const scrollContainer = document.querySelector(".constraint.scrollable");
+      if (scrollContainer) {
+        scrollContainer.scrollTop += e.deltaY;
+        e.preventDefault();
+      }
+    };
+
+    bgCanvas.addEventListener("wheel", handleWheel, { passive: false });
+    return () => bgCanvas.removeEventListener("wheel", handleWheel);
+  }, [scrollEnabled]);
+
   // ---------------------------- Render JSX ----------------------------
   const scatterDaFish = (shouldScatter: boolean) => {
     scatterRef.current = shouldScatter;
@@ -863,15 +901,15 @@ float bayerDither(vec2 pos) {
           height: "100vh",
           zIndex: 0,
           pointerEvents: "auto", // we listen for mousemove here
-          touchAction: contentVisible ? "auto" : "none", // Allow touch scroll when content visible
+          touchAction: scrollEnabled ? "auto" : "none", // Allow touch scroll when content visible
           userSelect: "none",     // Prevent text selection interference
           WebkitUserSelect: "none", // Safari-prefixed version
         }}
       />
 
       {/* UI layer (middle) */}
-      <main className={contentVisible ? "scrollable" : ""}>
-        <div className={`constraint${contentVisible ? " scrollable" : ""}`}>
+      <main className={scrollEnabled ? "scrollable" : ""}>
+        <div className={`constraint${scrollEnabled ? " scrollable" : ""}`}>
           <HankCard scatterCallback={scatterDaFish} onExpandChange={setContentVisible} />
           <PostContent visible={contentVisible} />
         </div>
