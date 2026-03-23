@@ -9,6 +9,15 @@ interface IProjectsSection {
 
 const projects = [
   {
+    id: "project-3",
+    name: "2022 Portfolio",
+    description: "My previous portfolio site for showing off coding and art",
+    tags: ["Web", "Design"],
+    gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
+    image: "/portfolio2022.webp",
+    link: "https://portfolio2022.hanksberger.workers.dev/",
+  },
+  {
     id: "project-1",
     name: "Motion Planning",
     description: "Agents navigating dynamic obstacles in real-time 3D",
@@ -26,15 +35,6 @@ const projects = [
     image: "/splatapp.webp",
     video: true,
     link: "https://assets.h4nk.com/splatapp.mp4",
-  },
-  {
-    id: "project-3",
-    name: "2022 Portfolio",
-    description: "My previous portfolio site for showing off coding and art",
-    tags: ["Web", "Design"],
-    gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
-    image: "/portfolio2022.webp",
-    link: "https://portfolio2022.hanksberger.workers.dev/",
   },
 ];
 

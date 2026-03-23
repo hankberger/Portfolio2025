@@ -106,8 +106,8 @@ export default function PostContent({ visible }: IPostContent) {
       </div>
       <EmploymentCard />
       <AboutMe visible={visible} />
-      <ProjectsSection visible={visible} />
       <ArtworkSection visible={visible} />
+      <ProjectsSection visible={visible} />
     </div>
   );
 }
