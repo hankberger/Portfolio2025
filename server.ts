@@ -45,6 +45,11 @@ const clientDist = path.resolve(__dirname, "../dist");
 
 app.use(express.static(clientDist));
 
+// Clean resume URL — must come before the SPA catch-all
+app.get("/resume", (_req, res) => {
+  res.sendFile(path.join(clientDist, "hank-berger-resume.pdf"));
+});
+
 app.get("*", (_req, res) => {
   res.sendFile(path.join(clientDist, "index.html"));
 });
