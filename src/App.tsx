@@ -8,6 +8,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import HankCard from "./components/HankCard";
 import PostContent from "./components/PostContent";
 import PointerHint from "./components/PointerHint";
+import VRButton from "./components/VRButton";
 import { updateCamera } from "./util/updateCamera";
 import { isPortrait } from "./util/isPortrait";
 
@@ -18,6 +19,9 @@ function App() {
   const [showPointerHint, setShowPointerHint] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(false);
+  const [vrSupported, setVrSupported] = useState(false);
+  const [vrActive, setVrActive] = useState(false);
+  const xrToggleRef = useRef<(() => void) | null>(null);
   const pointerHintFadingRef = useRef(false);
   const scatterRef = useRef(false);
   const hasMouseInputRef = useRef(false);
@@ -81,6 +85,7 @@ function App() {
     fgRenderer.setSize(window.innerWidth, window.innerHeight);
     fgRenderer.outputColorSpace = THREE.SRGBColorSpace;
     fgRenderer.setClearColor(0x000000, 0.0); // fully transparent
+    fgRenderer.xr.enabled = true; // VR mode (default reference space: local-floor)
 
     const fgScene = new THREE.Scene();
 
@@ -592,13 +597,74 @@ float bayerDither(vec2 pos) {
     const ARRIVE_RADIUS = 5.0;
     const TURN_FOLLOW = 0.01;
     const FOLLOW_UP = new THREE.Vector3(0, 1, 0);
-    const FIXED_TARGET = new THREE.Vector3(0, 0, 0);
+    // Center the flock swarms around. Origin on desktop; raised to head height in VR.
+    const flockCenter = new THREE.Vector3(0, 0, 0);
+
+    // ---------------------------- WebXR (VR mode) ----------------------------
+    const VR_BG_COLOR = 0x0147ff; // site blue (matches <html> background)
+    const VR_FLOCK_CENTER = new THREE.Vector3(0, 1.4, 0);
+    const VR_RAY_TARGET_DISTANCE = 5; // leader fish targets this far along the controller ray
+
+    // Controllers with a subtle aiming ray, added to the scene up front —
+    // they only receive poses while a session is presenting.
+    const controllerRayGeom = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0, 0, -1),
+    ]);
+    const controllerRayMat = new THREE.LineBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.35,
+    });
+    const controllers = [0, 1].map((i) => {
+      const controller = fgRenderer.xr.getController(i);
+      const ray = new THREE.Line(controllerRayGeom, controllerRayMat);
+      ray.scale.z = VR_RAY_TARGET_DISTANCE;
+      controller.add(ray);
+      controller.addEventListener("connected", () => {
+        controller.userData.connected = true;
+      });
+      controller.addEventListener("disconnected", () => {
+        controller.userData.connected = false;
+      });
+      fgScene.add(controller);
+      return controller;
+    });
+
+    fgRenderer.xr.addEventListener("sessionstart", () => {
+      // The DOM layer doesn't exist in the headset, so the transparent canvas
+      // becomes an opaque site-blue void with fog for depth.
+      fgScene.background = new THREE.Color(VR_BG_COLOR);
+      fgScene.fog = new THREE.Fog(VR_BG_COLOR, 8, 30);
+      flockCenter.copy(VR_FLOCK_CENTER);
+      scatterRef.current = false; // card UI is gone; never leave fish in scatter mode
+      hasMouseInputRef.current = false; // wait for controller aim before steering the leader
+      setVrActive(true);
+    });
+
+    fgRenderer.xr.addEventListener("sessionend", () => {
+      fgScene.background = null;
+      fgScene.fog = null;
+      flockCenter.set(0, 0, 0);
+      hasMouseInputRef.current = false;
+      handleResize(); // restore desktop camera position + aspect
+      setVrActive(false);
+    });
+
+    xrToggleRef.current = () => {
+      const session = fgRenderer.xr.getSession();
+      if (session) {
+        session.end();
+        return;
+      }
+      navigator.xr
+        ?.requestSession("immersive-vr", { optionalFeatures: ["local-floor"] })
+        .then((s) => fgRenderer.xr.setSession(s))
+        .catch((err) => console.error("Failed to start VR session", err));
+    };
 
     // ---------------------------- Animate ----------------------------
-    let running = true;
     const animate = () => {
-      if (!running) return;
-
       const dt = Math.min(clock.getDelta(), 0.033);
 
       // tick time once per unique material for dithering
@@ -607,12 +673,23 @@ float bayerDither(vec2 pos) {
         if (sh?.uniforms?.time) sh.uniforms.time.value += dt;
       });
 
-      // Leader (index 0) -> mouseTarget (or FIXED_TARGET until first input)
+      // In VR the leader follows the controller's pointing ray instead of the mouse
+      if (fgRenderer.xr.isPresenting) {
+        const controller = controllers.find((c) => c.userData.connected);
+        if (controller) {
+          controller.getWorldPosition(v1);
+          v2.set(0, 0, -1).applyQuaternion(controller.getWorldQuaternion(qTarget));
+          mouseTarget.copy(v1).addScaledVector(v2, VR_RAY_TARGET_DISTANCE);
+          hasMouseInputRef.current = true;
+        }
+      }
+
+      // Leader (index 0) -> mouseTarget (or flockCenter until first input)
       if (typeof player !== "undefined") {
         // Scatter takes priority - fish flee regardless of mouse input
         const targetPosition = scatterRef.current
           ? new THREE.Vector3(0, -12, 8)
-          : (hasMouseInputRef.current ? mouseTarget : FIXED_TARGET);
+          : (hasMouseInputRef.current ? mouseTarget : flockCenter);
 
         v1.copy(targetPosition).sub(player.position);
         const dist = v1.length();
@@ -671,7 +748,7 @@ float bayerDither(vec2 pos) {
         let avoidanceFactor = 0;
 
         const targetPoint = v1
-          .copy(scatterRef.current ? new THREE.Vector3(8, -10, 15) : FIXED_TARGET)
+          .copy(scatterRef.current ? new THREE.Vector3(8, -10, 15) : flockCenter)
           .add(followerOffsets[i])
           .add(v2);
 
@@ -755,13 +832,15 @@ float bayerDither(vec2 pos) {
 
       // pass 2: foreground (fish over DOM)
       fgRenderer.render(fgScene, camera);
-
-      requestAnimationFrame(animate);
     };
-    animate();
+    // setAnimationLoop (not requestAnimationFrame) so the loop keeps running
+    // inside WebXR sessions, where the headset drives the frame timing.
+    fgRenderer.setAnimationLoop(animate);
 
     // ---------------------------- Resize ----------------------------
     function handleResize() {
+      if (fgRenderer.xr.isPresenting) return; // WebXR owns the render size during a session
+
       const w = window.innerWidth;
       const h = window.innerHeight;
 
@@ -798,7 +877,11 @@ float bayerDither(vec2 pos) {
       const target = e.target as HTMLElement;
 
       // Skip if event is on interactive UI elements
-      if (target.closest('.getStarted') || target.closest('.socialMenu')) {
+      if (
+        target.closest('.getStarted') ||
+        target.closest('.socialMenu') ||
+        target.closest('.vr-button')
+      ) {
         return;
       }
 
@@ -813,7 +896,9 @@ float bayerDither(vec2 pos) {
 
     // ---------------------------- Cleanup ----------------------------
     return () => {
-      running = false;
+      fgRenderer.setAnimationLoop(null);
+      xrToggleRef.current = null;
+      fgRenderer.xr.getSession()?.end();
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("keydown", toggleDebug);
       window.removeEventListener("pointermove", onWindowPointerMove);
@@ -826,6 +911,15 @@ float bayerDither(vec2 pos) {
 
       fgRenderer.dispose();
     };
+  }, []);
+
+  // Show the VR button only when the browser can actually present immersive VR
+  // (e.g. Quest browser) — everyone else never sees it.
+  useEffect(() => {
+    navigator.xr
+      ?.isSessionSupported("immersive-vr")
+      .then((supported) => setVrSupported(supported))
+      .catch(() => setVrSupported(false));
   }, []);
 
   // Delay enabling scroll until content is fully rendered and laid out.
@@ -917,6 +1011,11 @@ float bayerDither(vec2 pos) {
 
       {/* Pointer hint - only in portrait mode when user hasn't interacted */}
       {showPointerHint && <PointerHint />}
+
+      {/* VR entry - only rendered on immersive-vr capable browsers */}
+      {vrSupported && (
+        <VRButton active={vrActive} onToggle={() => xrToggleRef.current?.()} />
+      )}
 
       {/* Foreground scene (fish OVER ui) */}
       <canvas
