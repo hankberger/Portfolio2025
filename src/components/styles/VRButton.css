@@ -6,8 +6,12 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  /* HankCard.css styles the bare `button` element (height: 100%, width: 180px) —
+     override so this doesn't stretch to the full viewport */
+  width: fit-content;
+  height: auto;
   padding: 12px 22px;
-  border-radius: 999px;
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.85);
