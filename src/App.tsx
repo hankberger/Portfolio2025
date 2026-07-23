@@ -353,6 +353,9 @@ float bayerDither(vec2 pos) {
 
     const OFFSET_RADIUS_MIN = 2.0;
     const OFFSET_RADIUS_MAX = 8.0;
+    // Mutable copies so VR can push the swarm farther out (see sessionstart)
+    let offsetRadiusMin = OFFSET_RADIUS_MIN;
+    let offsetRadiusMax = OFFSET_RADIUS_MAX;
     const OFFSET_TIME_MIN = 1.5;
     const OFFSET_TIME_MAX = 3.5;
     const OFFSET_SMOOTH = 1.8;
@@ -376,7 +379,7 @@ float bayerDither(vec2 pos) {
       target
         .normalize()
         .multiplyScalar(
-          THREE.MathUtils.randFloat(OFFSET_RADIUS_MIN, OFFSET_RADIUS_MAX)
+          THREE.MathUtils.randFloat(offsetRadiusMin, offsetRadiusMax)
         );
       return target;
     };
@@ -420,6 +423,10 @@ float bayerDither(vec2 pos) {
           fish.rotation.y = THREE.MathUtils.randFloat(-Math.PI, Math.PI);
           if (i !== 0) {
             fish.scale.setScalar(THREE.MathUtils.randFloat(0.4, 0.9));
+          }
+          fish.userData.baseScale = fish.scale.x;
+          if (fgRenderer.xr.isPresenting) {
+            fish.scale.setScalar(fish.userData.baseScale * VR_FISH_SCALE);
           }
 
           applyDitherToObject3D(fish, {
@@ -604,6 +611,16 @@ float bayerDither(vec2 pos) {
     const VR_BG_COLOR = 0x0147ff; // site blue (matches <html> background)
     const VR_FLOCK_CENTER = new THREE.Vector3(0, 1.4, 0);
     const VR_RAY_TARGET_DISTANCE = 5; // leader fish targets this far along the controller ray
+    const VR_FISH_SCALE = 0.6; // fish read as oversized at real-world scale; shrink them in VR
+    const VR_OFFSET_RADIUS_MIN = 3.5; // keep the swarm at a more comfortable distance
+    const VR_OFFSET_RADIUS_MAX = 10.0;
+
+    const applyFishScale = (presenting: boolean) => {
+      for (const fish of fishes) {
+        const base = fish.userData.baseScale ?? fish.scale.x;
+        fish.scale.setScalar(presenting ? base * VR_FISH_SCALE : base);
+      }
+    };
 
     // Controllers with a subtle aiming ray, added to the scene up front —
     // they only receive poses while a session is presenting.
@@ -637,6 +654,9 @@ float bayerDither(vec2 pos) {
       fgScene.background = new THREE.Color(VR_BG_COLOR);
       fgScene.fog = new THREE.Fog(VR_BG_COLOR, 8, 30);
       flockCenter.copy(VR_FLOCK_CENTER);
+      offsetRadiusMin = VR_OFFSET_RADIUS_MIN;
+      offsetRadiusMax = VR_OFFSET_RADIUS_MAX;
+      applyFishScale(true);
       scatterRef.current = false; // card UI is gone; never leave fish in scatter mode
       hasMouseInputRef.current = false; // wait for controller aim before steering the leader
       setVrActive(true);
@@ -646,6 +666,9 @@ float bayerDither(vec2 pos) {
       fgScene.background = null;
       fgScene.fog = null;
       flockCenter.set(0, 0, 0);
+      offsetRadiusMin = OFFSET_RADIUS_MIN;
+      offsetRadiusMax = OFFSET_RADIUS_MAX;
+      applyFishScale(false);
       hasMouseInputRef.current = false;
       handleResize(); // restore desktop camera position + aspect
       setVrActive(false);
@@ -797,7 +820,7 @@ float bayerDither(vec2 pos) {
           desiredSpeed = THREE.MathUtils.lerp(
             MIN_FOLLOW_SPEED,
             MAX_FOLLOW_SPEED,
-            THREE.MathUtils.clamp(distance / OFFSET_RADIUS_MAX, 0, 1)
+            THREE.MathUtils.clamp(distance / offsetRadiusMax, 0, 1)
           );
         }
 
