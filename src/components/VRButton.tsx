@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { animate, easings } from "animejs";
+import { animate } from "animejs";
 import "./styles/VRButton.css";
 
 interface VRButtonProps {
@@ -11,22 +11,18 @@ interface VRButtonProps {
 // so desktop/mobile visitors never see it.
 export default function VRButton({ active, onToggle }: VRButtonProps) {
   useEffect(() => {
+    // Entrance mirrors the Get Started button it sits beside
     animate(".vr-button", {
       opacity: {
         from: 0,
         to: 1,
-        duration: 600,
-        delay: 1500,
-        ease: easings.eases.outCirc,
+        // Matches the Get Started button — see the note in HankCard.tsx.
+        ease: "linear",
+        delay: 1750,
+        duration: 400,
       },
-      y: {
-        from: "1rem",
-        to: "0rem",
-        duration: 800,
-        delay: 1500,
-        ease: easings.spring({ mass: 1, stiffness: 80 }),
-      },
-    } as any);
+      y: [{ from: ".5rem", to: "0rem", delay: 1750 }],
+    });
   }, []);
 
   return (

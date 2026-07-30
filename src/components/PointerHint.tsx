@@ -1,11 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { animate, easings } from "animejs";
 import "./styles/PointerHint.css";
 
-export default function PointerHint() {
+interface IPointerHint {
+  /** When true, play the exit animation and then call onExited. */
+  exiting?: boolean;
+  onExited?: () => void;
+}
+
+export default function PointerHint({ exiting, onExited }: IPointerHint) {
+  const hintRef = useRef<HTMLDivElement>(null);
+  const iconRef = useRef<HTMLImageElement>(null);
+
+  // Fade in the whole hint container. The long delay lets the card intro land first.
   useEffect(() => {
-    // Fade in the whole hint container
-    animate(".pointer-hint", {
+    if (!hintRef.current) return;
+
+    animate(hintRef.current, {
       opacity: {
         from: 0,
         to: 1,
@@ -20,10 +31,14 @@ export default function PointerHint() {
         delay: 2000,
         ease: easings.spring({ mass: 1, stiffness: 80 }),
       },
-    } as any);
+    });
+  }, []);
 
-    // Organic curved motion - traces a smooth loop pattern
-    animate(".pointer-icon", {
+  // Organic curved motion - traces a smooth loop pattern
+  useEffect(() => {
+    if (!iconRef.current) return;
+
+    animate(iconRef.current, {
       x: [
         { to: "4px", duration: 400, ease: easings.eases.outCirc },
         { to: "6px", duration: 300, ease: easings.eases.inOutCirc },
@@ -62,12 +77,32 @@ export default function PointerHint() {
       delay: 2600,
       loop: true,
       loopDelay: 2000,
-    } as any);
+    });
   }, []);
 
+  // Exit animation. Owned here rather than by the caller, so this component
+  // stays the only thing that touches its own DOM.
+  useEffect(() => {
+    if (!exiting || !hintRef.current) return;
+
+    animate(hintRef.current, {
+      opacity: {
+        to: 0,
+        duration: 500,
+        ease: easings.eases.inOutCirc,
+      },
+      y: {
+        to: "1.5rem",
+        duration: 600,
+        ease: easings.eases.inCirc,
+      },
+      onComplete: () => onExited?.(),
+    });
+  }, [exiting, onExited]);
+
   return (
-    <div className="pointer-hint">
-      <img src="/pointer.svg" alt="" className="pointer-icon" />
+    <div className="pointer-hint" ref={hintRef}>
+      <img src="/pointer.svg" alt="" className="pointer-icon" ref={iconRef} />
       <span className="pointer-text">Drag around to move your fish</span>
     </div>
   );

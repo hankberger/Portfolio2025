@@ -157,14 +157,14 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
         delay: 900,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".projects-section .section-rule", {
         scaleX: [0, 1],
         delay: 950,
         duration: 700,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".projects-carousel-container", {
         opacity: [0, 1],
@@ -172,14 +172,14 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
         delay: 900,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".project-card", {
         y: ["1rem", "0rem"],
         delay: stagger(80, { start: 1000 }),
         duration: 500,
         ease: easings.eases.outQuart,
-      } as any);
+      });
     }
 
     if (!visible) {

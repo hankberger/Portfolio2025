@@ -4,18 +4,45 @@ canvas {
   display: block;
 }
 
-#mountRef {
-  display: none;
-}
-
-.header {
+/*
+ * The three-layer stack. Order here is load-bearing: the fish are drawn on a
+ * transparent canvas above the UI, while pointer input is captured on a canvas
+ * below it.
+ */
+.stage {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
+  inset: 0;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
 }
 
-#mount {
-  z-index: 9999;
+.stage-bg,
+.stage-fg {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.stage-bg {
+  z-index: 0;
+  /* Pointer events land here — this is what steers the fish. */
+  pointer-events: auto;
+  /* Block browser panning so touch drags steer the fish instead of scrolling. */
+  touch-action: none;
+  /* Text selection during a drag would interrupt fish steering. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Once the card is expanded there is real content to scroll, so give the
+   browser its panning gesture back. */
+.stage-bg.scroll-enabled {
+  touch-action: auto;
+}
+
+.stage-fg {
+  z-index: 2;
+  /* Never block clicks on the UI underneath. */
+  pointer-events: none;
 }

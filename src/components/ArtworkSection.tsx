@@ -179,14 +179,14 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
         delay: 1300,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".artwork-section .section-rule", {
         scaleX: [0, 1],
         delay: 1350,
         duration: 700,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".artwork-tool, .artwork-tool-divider", {
         opacity: [0, 1],
@@ -194,7 +194,7 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
         delay: 1350,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".artwork-carousel-container", {
         opacity: [0, 1],
@@ -202,14 +202,14 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
         delay: 1300,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".artwork-card", {
         y: ["1rem", "0rem"],
         delay: stagger(80, { start: 1400 }),
         duration: 500,
         ease: easings.eases.outQuart,
-      } as any);
+      });
     }
 
     if (!visible) {

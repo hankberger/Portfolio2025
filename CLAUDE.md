@@ -44,8 +44,9 @@ When adding components, focus on:
 # Development
 npm run dev              # Start Vite dev server with HMR
 
-# Linting
+# Linting & tests
 npm run lint             # Run ESLint on the codebase
+npm run smoke            # Headless smoke test of the flock simulation
 
 # Building
 npm run build:client     # Build client (TypeScript + Vite)
@@ -79,42 +80,48 @@ The app uses an unconventional **three-layer canvas/DOM sandwich**:
    - Uses alpha transparency (`alpha: true`) so DOM is visible underneath
    - Has `pointerEvents: none` to allow clicks through to UI
 
-**Critical**: Both canvases share a single `camera` object. The foreground scene renders the fish **over** the UI layer to create depth.
+**Critical**: The foreground scene renders the fish **over** the UI layer to create depth. The foreground canvas must stay `alpha: true` with `pointerEvents: none`.
 
-### Key Rendering Patterns
+Layer styling lives in `src/App.css` (`.stage`, `.stage-bg`, `.stage-fg`), not in inline styles.
 
-- **Dithering System** (`ditherizeMaterial`, `applyDitherToObject3D` in `src/App.tsx:62-285`)
-  - Custom shader injection using `onBeforeCompile`
-  - Applies Bayer matrix dithering to Three.js materials
-  - Supports color tinting, emissive lighting, and quantization levels
-  - All dithered materials are tracked in `ditherMats` Set for time uniform updates
+### The Scene Layer (`src/scene/`)
 
-- **Fish Animation** (`src/App.tsx:298-434`)
-  - Leader fish (index 0) follows mouse via raycaster + dual-plane intersection
-  - Follower fish use offset-based flocking with avoidance behavior
-  - Each fish has a GLTF animation mixer with randomized playback speed
-  - Vivid procedural colors via seeded HSL generation (`vividColorVariant`)
+**The Three.js code is framework-free.** It knows nothing about React, and React touches it only through `src/hooks/useFishScene.ts`. Keep it that way — it is what makes the simulation possible to reason about and test on its own.
 
-- **Mouse Targeting** (`src/App.tsx:436-505`)
-  - Uses raycaster to intersect with two planes: ground (horizontal) and vertical
-  - Chooses the closest intersection point to camera as target
-  - Supports both mouse (`mousemove`) and touch (`touchmove`) events
+`createScene({ bgCanvas, fgCanvas })` owns the renderer, camera and frame loop, and returns a small handle (`setScatter`, `toggleVR`, `dispose`).
 
-### Shader Files
+| File | Responsibility |
+| --- | --- |
+| `scene/index.ts` | Composes the modules, owns the renderer + frame loop, orchestrates VR state changes |
+| `scene/config.ts` | **Every tunable number in the scene.** Start here when changing how things look or feel |
+| `scene/flock.ts` | The simulation: `Fish[]`, leader steering, follower flocking + avoidance |
+| `scene/dither.ts` | Bayer dither injected into Three's shaders via `onBeforeCompile`; tracks materials so their `time` uniform advances |
+| `scene/colors.ts` | Seeded per-fish color/level variants (stable across reloads) |
+| `scene/pointer.ts` | Pointer → NDC → dual-plane raycast → world-space target |
+| `scene/xr.ts` | WebXR session lifecycle and controller rays |
+| `scene/camera.ts` | Camera creation and orientation-dependent framing |
+| `scene/debug.ts` | Plane helpers, target marker, `d` keybind |
 
-- `src/shaders/DitherShader.ts` - Standalone Bayer dither post-processing shader (not currently used in App.tsx)
-- `src/shaders/MouseShader.tsx` - Orange glow effect with simplex noise turbulence (currently unused component)
+**Rules of thumb when extending the scene:**
 
-The active dithering implementation is **inline in App.tsx** via `onBeforeCompile`, not using these shader files.
+- **Never put a bare number in a scene module.** Add it to `config.ts`.
+- **Never allocate in the frame loop.** `flock.ts` keeps module-level scratch vectors for this reason; reuse them rather than calling `new THREE.Vector3()` per frame.
+- **One fish is one `Fish` object.** Do not reintroduce parallel arrays indexed by fish number.
+- Fish appearance is derived from `fish.index` via a seeded RNG, so a given fish looks the same on every load. Use `index`, not `Math.random()`, for anything visual.
+- `LEADER_LOOK.variantIndex` is deliberately 1 (not 0) — see the comment in `config.ts` before "fixing" it.
+- `FLOCK.followerAnimationScale` advances the mixer by a lerp factor rather than a time delta, so follower tail-wag is frame-rate dependent. Documented and intentional; changing it means re-tuning the look.
 
-### Component Structure
+### React Layer
 
-- `src/App.tsx` - Main Three.js setup and animation loop
-- `src/components/HankCard.tsx` - Portfolio card with expand/collapse animation
-  - Uses `anime.js` for stagger text reveals
-  - Triggers fish scatter behavior on expand via `scatterCallback`
-- `src/components/ButtonContent.tsx` - Content inside the expandable card button
-- `src/util/isPortrait.ts` - Orientation detection utility
+- `src/App.tsx` - Layout and the three-layer stack only. Should stay small.
+- `src/hooks/useFishScene.ts` - The **only** bridge to `src/scene/`. Creates the scene once on mount; never rebuilds it on re-render.
+- `src/hooks/usePointerHint.ts` - State machine for the portrait-only interaction hint.
+- `src/components/HankCard.tsx` - Portfolio card; reports expand/collapse via `onExpandChange`, which App turns into fish scatter.
+- `src/util/isPortrait.ts` - Orientation detection utility.
+
+Components own their own DOM. If you need to animate an element, animate it from the component that renders it — do not reach across components with `document.querySelector`.
+
+Interactive UI that should **not** steer the fish needs a `data-fish-ignore` attribute (see `POINTER.ignoreSelector` in `scene/config.ts`).
 
 ### Server
 
@@ -159,13 +166,24 @@ The Express server (`server.ts`) serves the built `/dist` folder with:
 
 The `isPortrait()` utility detects orientation - use it for responsive adjustments.
 
+### Simulation Smoke Test
+
+```bash
+npm run smoke            # Headless check of the flock simulation
+```
+
+`scripts/flock-smoke.ts` runs the flock without a browser (three.js core needs no WebGL as long as nothing renders) and asserts spawning, material routing, leader tracking, scatter, VR scale transitions, frame-rate stability and teardown. **Run it after any change to `src/scene/flock.ts` or `src/scene/dither.ts`** — it catches NaN positions and scratch-vector aliasing bugs that are very hard to spot by eye.
+
+It does not replace looking at the page. Rendering, shaders and pointer input still need a real browser.
+
 ### Debug Mode
 
 Press `d` key to toggle debug mode:
-- Enables OrbitControls for camera manipulation
 - Shows visual helpers for raycaster planes (ground plane = green, vertical plane = red)
-- Displays chosen mouse target marker (red sphere)
+- Displays the chosen pointer target marker (red sphere)
 - Logs camera position/rotation to console
+
+There is no OrbitControls integration despite what earlier notes claimed.
 
 ## Adding New Components
 
@@ -203,8 +221,9 @@ export default function YourComponent() {
 
 - Component files go in `src/components/`
 - Styles go in `src/components/styles/` with matching names (e.g., `YourComponent.css`)
-- Utilities go in `src/util/`
-- Shaders go in `src/shaders/`
+- React hooks go in `src/hooks/`
+- Shared utilities go in `src/util/`
+- Anything Three.js goes in `src/scene/` and must not import React
 
 ## Code Style & Consistency
 
@@ -219,21 +238,29 @@ The codebase currently has some inconsistent patterns. When modifying or adding 
 
 ### Known Patterns
 
-- **Event listeners**: Set up in `useEffect` with proper cleanup in the return function (see `HankCard.tsx:59-83`)
-- **Animations**: Use anime.js with `animate()` and `stagger()` for entrance effects
-- **Three.js patterns**: Materials are modified via `onBeforeCompile` for shader injection (see dithering system)
-- **CSS**: Mix of inline styles and CSS files. For new components, prefer CSS files in `src/components/styles/`
+- **Event listeners**: Set up in `useEffect` (or a factory's body) with cleanup that removes *the same function reference* — never register an inline arrow you cannot later remove
+- **Animations**: Use anime.js with `animate()` and `stagger()` for entrance effects, targeting a `ref` rather than a global selector where practical
+- **Three.js patterns**: Materials are modified via `onBeforeCompile` for shader injection (see `scene/dither.ts`)
+- **Scene modules**: Factory functions returning a small handle with an explicit `dispose()`. Every listener, geometry and material a module creates, it also tears down
+- **CSS**: Prefer CSS files. `src/App.css` holds the layer stack; component styles go in `src/components/styles/`
+
+### anime.js Typing
+
+`npm run lint` is clean — **keep it that way.** Do not add `as any` to `animate()` calls. Anime v4's types accept the per-property `{ from, to }` and keyframe-array syntax used throughout this codebase; the casts that used to be here were unnecessary, and they were actively hiding a real bug (see below).
+
+**Pass eases by reference, never call them.** `easings.eases.outQuart` is correct; `easings.eases.outQuart(1)` *evaluates* the curve at t=1 and yields a number, which anime.js silently falls back to linear on. Generators like `easings.spring({ ... })` are the exception — those are meant to be called.
+
+Four animations in `HankCard.tsx` / `VRButton.tsx` carry `ease: "linear"` with a comment. That is deliberate: it preserves how they have always rendered. They were written as `easings.eases.inBounce(1)`, so they never bounced. Switching them to `easings.eases.inBounce` gives the intended bounce but changes the intro's look.
 
 ### Areas That Need Cleanup
 
-- **App.tsx** is quite long (800+ lines) but functional. When adding Three.js features, keep the existing structure.
-- Some debug code and console.logs can be removed in production
-- Unused shader files (`DitherShader.ts`, `MouseShader.tsx`) exist but aren't currently used
+- `.sparkle` and `.socialMenu` rules remain in `HankCard.css` with nothing rendering them.
+- Bundle is ~870 kB (mostly three.js) with no code splitting.
 
 ## Important Notes
 
-- Debug mode can be toggled with the `d` key (enables OrbitControls and visual helpers)
-- The `scatter` variable controls whether fish flee or follow (toggled by HankCard expansion)
-- Fish cloning uses `SkeletonUtils.clone()` to properly duplicate animated GLTF models
-- All fish materials are set to `THREE.DoubleSide` to prevent backface culling issues
+- Debug mode can be toggled with the `d` key (visual helpers for the raycaster planes and target)
+- Scatter state lives in the scene; `HankCard` expansion drives it via `App` → `useFishScene().setScatter`
+- Fish cloning uses `SkeletonUtils.clone()` to properly duplicate animated GLTF models. **It shares materials between clones**, which is why `dither.ts` clones before modifying
+- All fish materials are set to `THREE.DoubleSide` to prevent backface culling issues, and `frustumCulled = false` to prevent pop-in
 - Current content in `HankCard` and related components is placeholder - needs replacement with real portfolio content

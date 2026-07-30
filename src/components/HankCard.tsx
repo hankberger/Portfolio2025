@@ -2,55 +2,44 @@ import { useEffect, useRef, useState } from "react";
 import "./styles/HankCard.css";
 import { animate, stagger, splitText, easings } from "animejs";
 import { getVideoSrc } from "../util/browserDetection";
+import VRButton from "./VRButton";
 
 interface IHankCard {
-  scatterCallback: (shouldScatter: boolean) => void;
+  /** Fired when the card expands or collapses. */
   onExpandChange?: (expanded: boolean) => void;
+  vrSupported?: boolean;
+  vrActive?: boolean;
+  onToggleVR?: () => void;
 }
 
 export default function HankCard(props: IHankCard) {
-  const scatterCallback = props.scatterCallback;
   const [bigButton, setBigButton] = useState(false);
   const hasToggled = useRef(false);
 
+  // Stagger the heading in character by character. Each heading gets its own
+  // stagger so they reveal in parallel rather than one after the other.
   useEffect(() => {
-    const { chars } = splitText("h1", { words: false, chars: true });
-    animate(chars, {
-      opacity: {
-        from: 0,
-        to: 1,
-        ease: easings.eases.inBounce(1),
-        duration: 400,
-        delay: stagger(55, { start: 1200 }),
-      },
-      x: [{ from: "1rem", to: "0rem", delay: stagger(50, { start: 1200 }) }],
-    } as any);
-  }, []);
+    const revealChars = (selector: string) => {
+      const { chars } = splitText(selector, { words: false, chars: true });
+      animate(chars, {
+        opacity: {
+          from: 0,
+          to: 1,
+          // "linear" is what this has always actually done. The old
+          // `easings.eases.inBounce(1)` *called* the ease function at t=1,
+          // producing the number 1 rather than an ease — anime.js then fell
+          // back to linear. For the bounce that was presumably intended, pass
+          // the function itself: `ease: easings.eases.inBounce`.
+          ease: "linear",
+          duration: 400,
+          delay: stagger(55, { start: 1200 }),
+        },
+        x: [{ from: "1rem", to: "0rem", delay: stagger(50, { start: 1200 }) }],
+      });
+    };
 
-  useEffect(() => {
-    const { chars } = splitText("h2", { words: false, chars: true });
-    animate(chars, {
-      opacity: {
-        from: 0,
-        to: 1,
-        ease: easings.eases.inBounce(1),
-        duration: 400,
-        delay: stagger(55, { start: 1200 }),
-      },
-      x: [{ from: "1rem", to: "0rem", delay: stagger(50, { start: 1200 }) }],
-    } as any);
-  }, []);
-  useEffect(() => {
-    const sparkle = document.getElementsByClassName("sparkle");
-    animate(sparkle, {
-      opacity: {
-        from: 0,
-        to: 1,
-        ease: easings.eases.inBounce(1),
-        duration: 400,
-      },
-      x: [{ from: "1rem", to: "0rem", delay: stagger(50) }],
-    } as any);
+    revealChars("h1");
+    revealChars("h2");
   }, []);
 
   useEffect(() => {
@@ -58,12 +47,12 @@ export default function HankCard(props: IHankCard) {
       opacity: {
         from: 0,
         to: 1,
-        ease: easings.eases.inBounce(1),
+        ease: "linear", // see the note in the heading reveal above
         delay: 1750,
         duration: 400,
       },
       y: [{ from: ".5rem", to: "0rem", delay: 1750 }],
-    } as any);
+    });
   }, []);
 
   useEffect(() => {
@@ -76,22 +65,14 @@ export default function HankCard(props: IHankCard) {
         duration: 2400,
         ease: easings.eases.inOutCirc,
         loop: true,
-      } as any);
+      });
     }
   }, [bigButton]);
 
   const toggle = async () => {
     hasToggled.current = true;
 
-    // Scroll to top instantly before collapsing (back to the fish)
-    if (bigButton) {
-      const container = document.querySelector(".constraint");
-      if (container) {
-        container.scrollTop = 0;
-      }
-    }
-
-    scatterCallback(!bigButton);
+    // App owns the scroll container and the fish, and reacts to this.
     props.onExpandChange?.(!bigButton);
     // Fade out current button (moves down, mirrors the fade in)
     await animate(".getStarted", {
@@ -104,7 +85,7 @@ export default function HankCard(props: IHankCard) {
       y: [{ from: "0rem", to: "0.5rem", ease: easings.eases.outQuad }],
       duration: 200,
       ease: easings.eases.outQuad,
-    } as any).then(() => {
+    }).then(() => {
       setBigButton(!bigButton);
     });
   };
@@ -117,12 +98,12 @@ export default function HankCard(props: IHankCard) {
       opacity: {
         from: 0,
         to: 1,
-        ease: easings.eases.inBounce(1),
+        ease: "linear", // see the note in the heading reveal above
         delay: 200,
         duration: 400,
       },
       y: [{ from: "0.5rem", to: "0rem", delay: 200 }],
-    } as any);
+    });
   }, [bigButton]);
 
   const [introVideoDone, setIntroVideoDone] = useState(false);
@@ -157,7 +138,6 @@ export default function HankCard(props: IHankCard) {
                 playsInline
                 style={{ opacity: introVideoDone ? 1 : 0 }}
                 onError={() => setVideoFailed(true)}
-                // @ts-ignore
                 webkit-playsinline="true"
               />
               <video
@@ -171,7 +151,6 @@ export default function HankCard(props: IHankCard) {
                 onError={() => setVideoFailed(true)}
                 onLoadedData={handleVideoLoaded}
                 style={{ opacity: introVideoDone ? 0 : 1 }}
-                // @ts-ignore
                 webkit-playsinline="true"
               />
             </>
@@ -180,10 +159,11 @@ export default function HankCard(props: IHankCard) {
         <div className="column">
           <h1>HANK BERGER</h1>
           <h2>Developer & Motion Designer </h2>
-          <button
-            className={`getStarted${bigButton ? " active" : ""}`}
-            onClick={toggle}
-          >
+          <div className="ctaRow">
+            <button
+              className={`getStarted${bigButton ? " active" : ""}`}
+              onClick={toggle}
+            >
             <span className="buttonContent">
               {!bigButton ? (
                 <>
@@ -216,7 +196,14 @@ export default function HankCard(props: IHankCard) {
                 </>
               )}
             </span>
-          </button>
+            </button>
+            {props.vrSupported && (
+              <VRButton
+                active={!!props.vrActive}
+                onToggle={() => props.onToggleVR?.()}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

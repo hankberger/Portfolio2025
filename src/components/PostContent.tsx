@@ -69,7 +69,7 @@ export default function PostContent({ visible }: IPostContent) {
         delay: stagger(80, { start: 200 }),
         duration: 500,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       // Hello card fade in
       animate(".hello-card", {
@@ -78,7 +78,7 @@ export default function PostContent({ visible }: IPostContent) {
         delay: 500,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
     }
 
     if (!visible) {

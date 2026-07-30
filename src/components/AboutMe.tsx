@@ -37,14 +37,14 @@ export default function AboutMe({ visible }: IAboutMe) {
         delay: 700,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".about-me .section-rule", {
         scaleX: [0, 1],
         delay: 700,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".about-me .skill-detail, .about-me .skill-divider", {
         opacity: [0, 1],
@@ -52,7 +52,7 @@ export default function AboutMe({ visible }: IAboutMe) {
         delay: 700,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
 
       animate(".about-me .about-description", {
         opacity: [0, 1],
@@ -60,7 +60,7 @@ export default function AboutMe({ visible }: IAboutMe) {
         delay: 700,
         duration: 600,
         ease: easings.eases.outQuart,
-      } as any);
+      });
     }
 
     if (!visible) {
