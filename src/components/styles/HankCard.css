@@ -183,6 +183,13 @@ a {
   gap: 5px;
 }
 
+.ctaRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .getStarted {
   width: fit-content;
   height: auto;
