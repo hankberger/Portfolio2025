@@ -495,7 +495,7 @@
   }
 }
 
-/* Narrow screens (below 1350px) and Portrait - use column layout */
+/* Layout: applies to narrow viewports of any orientation. See HankCard.css. */
 @media (orientation: portrait), (max-width: 1350px) {
   .post-content {
     width: 90%;
@@ -506,15 +506,6 @@
     padding-bottom: 4rem;
   }
 
-  .social-button {
-    height: 4.5rem;
-  }
-
-  .social-button svg {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
   .hello-card {
     justify-content: flex-start;
     align-items: flex-start;
@@ -523,5 +514,18 @@
   .project-card,
   .artwork-card {
     height: 220px;
+  }
+}
+
+/* Touch sizing: portrait only. Narrow landscape keeps the smaller social
+   buttons from the landscape block above. */
+@media (orientation: portrait) {
+  .social-button {
+    height: 4.5rem;
+  }
+
+  .social-button svg {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }

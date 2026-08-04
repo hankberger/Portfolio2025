@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isPortrait } from "../util/isPortrait";
+import { isPortrait, subscribeToOrientation } from "../util/isPortrait";
 
 // State machine for the "drag around to move your fish" hint.
 //
@@ -79,6 +79,21 @@ export function usePointerHint(): PointerHint {
     },
     [clearTimer, dismiss, scheduleReveal]
   );
+
+  // Rotating the device mid-hint used to leave it stranded on screen, because
+  // orientation was only consulted on mount and when the idle timer fired.
+  useEffect(() => {
+    return subscribeToOrientation(() => {
+      if (isPortrait()) {
+        scheduleReveal();
+        return;
+      }
+      clearTimer();
+      exitingRef.current = false;
+      setExiting(false);
+      setVisible(false);
+    });
+  }, [clearTimer, scheduleReveal]);
 
   useEffect(() => clearTimer, [clearTimer]);
 

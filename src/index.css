@@ -27,7 +27,14 @@ body {
   background: rgba(255, 255, 255, 0.35);
 }
 
-@media (orientation: portrait), (max-width: 1350px) {
+/*
+ * The base type scale is a *portrait* concern, not a width concern. Gating it
+ * on `max-width` as well meant OS display scaling dropped real landscape
+ * desktops to the mobile scale: a 1080p monitor at 150% scaling reports a
+ * 1280px viewport, so every rem on the page shrank by 30%.
+ * See the longer note in HankCard.css.
+ */
+@media (orientation: portrait) {
   html,
   body {
     font-size: 14px;

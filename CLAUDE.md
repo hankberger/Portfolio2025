@@ -164,7 +164,35 @@ The Express server (`server.ts`) serves the built `/dist` folder with:
 - Animations should maintain 60fps on mobile
 - No layout breaks on portrait/landscape orientation changes
 
-The `isPortrait()` utility detects orientation - use it for responsive adjustments.
+### Orientation (read before touching a media query)
+
+There is **one** definition of portrait and everything must use it: the
+`(orientation: portrait)` media query. `src/util/isPortrait.ts` delegates to it
+via `matchMedia`, so JS and CSS cannot drift. Use `subscribeToOrientation()`
+rather than a `resize` listener when you need to react to rotation.
+
+- **Never use `screen.orientation`.** It describes the physical *device*, not the
+  viewport. A pivoted vertical monitor reports `portrait-primary` with a wide
+  window on it; a tall narrow window on a landscape monitor reports
+  `landscape-primary`. That mismatch made the camera framing disagree with the
+  CSS layout on the same screen.
+- **Never OR orientation with a width** — `(orientation: portrait), (max-width: N)`
+  is a bug waiting to happen. The comma is an OR, so the rules also fire on
+  *landscape* viewports under N, and OS display scaling puts ordinary landscape
+  monitors there: a 1080p panel at 150% scaling reports a 1280px viewport, 1440p
+  at 200% likewise. Browser zoom does the same.
+
+Keep the two concerns in separate queries:
+
+| Concern | Query | Why |
+| --- | --- | --- |
+| Stacking / layout | `(orientation: portrait), (max-width: 1350px)` | A cramped landscape window must stack or it overflows |
+| Type scale, touch sizing | `(orientation: portrait)` | A landscape desktop must never get the mobile type scale |
+
+`scripts/` has no CSS test, but you can verify a change by building and resolving
+the cascade per viewport — that is how the split above was checked. Confirm that
+the **portrait** rows are byte-identical before and after any change; only
+narrow-landscape rows should move.
 
 ### Simulation Smoke Test
 

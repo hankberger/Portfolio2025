@@ -321,7 +321,28 @@ a {
   }
 }
 
-/* Narrow screens (below 1350px) and Portrait - use column layout */
+/*
+ * IMPORTANT: two different concerns, deliberately kept in separate queries.
+ *
+ * These rules used to share one `(orientation: portrait), (max-width: 1350px)`
+ * query. That comma is an OR, so all of them fired on *landscape* viewports
+ * under 1350px as well — and OS display scaling puts plenty of ordinary
+ * landscape monitors there (1080p at 150% scaling reports a 1280px viewport,
+ * 1440p at 200% likewise). A landscape desktop therefore got the stacked
+ * layout, touch-sized controls, and the mobile type scale, while
+ * `(orientation: landscape) and (max-width: 2000px)` above tried to set the
+ * desktop scale and lost on source order.
+ *
+ * Now separated:
+ *   - layout (stacking) applies to narrow viewports of ANY orientation, so a
+ *     cramped landscape window still can't overflow
+ *   - type and touch sizing apply only in genuine portrait
+ *
+ * Please keep them apart. src/util/isPortrait.ts reads this same
+ * `(orientation: portrait)` query so the camera framing agrees with the layout.
+ */
+
+/* Layout: stack the card when the viewport is narrow OR portrait. */
 @media (orientation: portrait), (max-width: 1350px) {
   .constraint {
     flex-direction: column;
@@ -345,14 +366,23 @@ a {
     text-align: center;
   }
 
+  .column {
+    align-items: center;
+  }
+
+  .content {
+    margin-left: 0;
+    align-items: center;
+  }
+}
+
+/* Type and touch sizing: portrait only. Narrow landscape keeps the desktop
+   scale from the landscape block above. */
+@media (orientation: portrait) {
   .sparkle {
     margin-bottom: 0.5rem;
     margin-top: 0;
     height: 6rem;
-  }
-
-  .column {
-    align-items: center;
   }
 
   h1 {
@@ -377,11 +407,6 @@ a {
   .fallback-image {
     width: 150px;
     height: 150px;
-  }
-
-  .content {
-    margin-left: 0;
-    align-items: center;
   }
 
   .getStarted {

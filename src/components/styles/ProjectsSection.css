@@ -112,7 +112,8 @@
 }
 
 /* Responsive adjustments */
-@media (orientation: portrait), (max-width: 1350px) {
+/* Type scale only, so portrait only. See the note in HankCard.css. */
+@media (orientation: portrait) {
   .projects-section .section-header {
     margin-top: 1rem;
     font-size: 1.25rem;
@@ -122,7 +123,11 @@
     height: 1.5rem;
     width: 1.5rem;
   }
+}
 
+/* Layout: the carousel needs its buttons overlaid and its track clamped on any
+   narrow viewport, portrait or not, or it overflows. */
+@media (orientation: portrait), (max-width: 1350px) {
   .projects-carousel-container {
     position: relative;
     padding: 0 !important;

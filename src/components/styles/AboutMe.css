@@ -102,7 +102,9 @@
 }
 
 /* Responsive adjustments */
-@media (orientation: portrait), (max-width: 1350px) {
+/* Type scale only, so portrait only — a landscape viewport under 1350px (very
+   common with OS display scaling) keeps the desktop scale. See HankCard.css. */
+@media (orientation: portrait) {
   .about-me .section-header {
     margin-top: 1rem;
     font-size: 1.25rem;
