@@ -166,22 +166,191 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Hank Berger",
-        "url": "https://h4nk.com/",
-        "jobTitle": "Developer & Motion Designer",
-        "description": "Developer and artist specializing in interactive web experiences with custom 3D animations and thoughtful interface design.",
-        "sameAs": [
-          "https://github.com/hankberger",
-          "https://linkedin.com/in/hankberger",
-          "https://x.com/h4nkdog",
-          "https://instagram.com/hankberger"
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://h4nk.com/#website",
+            "url": "https://h4nk.com/",
+            "name": "Hank Berger — Developer & Motion Designer",
+            "description": "Portfolio of Hank Berger: interactive WebGL experiences, 3D animation and interface design.",
+            "publisher": { "@id": "https://h4nk.com/#person" }
+          },
+          {
+            "@type": "ProfilePage",
+            "@id": "https://h4nk.com/#profile",
+            "url": "https://h4nk.com/",
+            "isPartOf": { "@id": "https://h4nk.com/#website" },
+            "mainEntity": { "@id": "https://h4nk.com/#person" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://h4nk.com/#person",
+            "name": "Hank Berger",
+            "url": "https://h4nk.com/",
+            "image": "https://h4nk.com/ogimage.jpeg",
+            "jobTitle": "Developer & Motion Designer",
+            "description": "Developer and artist specializing in interactive web experiences with custom 3D animations and thoughtful interface design.",
+            "worksFor": {
+              "@type": "Organization",
+              "name": "Epic Systems",
+              "url": "https://www.epic.com/"
+            },
+            "knowsAbout": [
+              "React",
+              "TypeScript",
+              "Three.js",
+              "WebGL",
+              "WebXR",
+              "Node.js",
+              "React Native",
+              "iOS",
+              "Android",
+              "Motion design",
+              "Shaders",
+              "3D animation",
+              "Houdini",
+              "Unreal Engine",
+              "Blender",
+              "Gaussian splatting"
+            ],
+            "sameAs": [
+              "https://github.com/hankberger",
+              "https://linkedin.com/in/hankberger",
+              "https://x.com/h4nkdog",
+              "https://instagram.com/h4nkdog"
+            ]
+          },
+          {
+            "@type": "ItemList",
+            "@id": "https://h4nk.com/#projects",
+            "name": "Projects",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "item": {
+                  "@type": "CreativeWork",
+                  "name": "2022 Portfolio",
+                  "url": "https://portfolio2022.hanksberger.workers.dev/",
+                  "description": "Previous portfolio site for showing off coding and art.",
+                  "author": { "@id": "https://h4nk.com/#person" }
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "item": {
+                  "@type": "CreativeWork",
+                  "name": "Motion Planning",
+                  "url": "https://hankberger.github.io/PathPlanningThreeJS/",
+                  "description": "Agents navigating dynamic obstacles in real-time 3D, built with Three.js.",
+                  "author": { "@id": "https://h4nk.com/#person" }
+                }
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "item": {
+                  "@type": "CreativeWork",
+                  "name": "Gaussian Splatting",
+                  "url": "https://assets.h4nk.com/splatapp.mp4",
+                  "description": "Mobile app for capturing 3D scenes from your phone.",
+                  "author": { "@id": "https://h4nk.com/#person" }
+                }
+              }
+            ]
+          }
         ]
       }
     </script>
+
+    <!-- Styling for the no-JS fallback content below. Only renders when
+         JavaScript is disabled (or for non-JS crawlers reading the source). -->
+    <style>
+      .noscript-content {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+        font-family: "DM Sans", sans-serif;
+        color: #fff;
+      }
+      .noscript-content a {
+        color: #fff;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Static fallback for non-JS crawlers and users with JavaScript disabled.
+         Mirrors the content rendered by the React app — keep the two in sync. -->
+    <noscript>
+      <main class="noscript-content">
+        <h1>Hank Berger</h1>
+        <p>Developer &amp; Motion Designer</p>
+        <p>
+          Design engineer building interactive experiences. I animate 3D models
+          and design interfaces that feel good to use. This site is an
+          interactive WebGL experience with a school of dithered 3D fish —
+          enable JavaScript to see it.
+        </p>
+
+        <h2>Employment</h2>
+        <p>
+          Software Developer at Epic Systems on MyChart Bedside — building
+          patient-facing healthcare applications that help people manage their
+          hospital stay and recovery journey.
+        </p>
+
+        <h2>About Me</h2>
+        <p>
+          I've been obsessed with digital art and programming for almost a
+          decade now. What started as two separate hobbies has now become an
+          insanely synergistic skillset, empowering me to create incredible
+          experiences.
+        </p>
+        <ul>
+          <li>Web — React, Three.js, WebGL, Node.js</li>
+          <li>Mobile — React Native, iOS, Android</li>
+          <li>Animation — Motion design, Shaders, 3D</li>
+        </ul>
+
+        <h2>Projects</h2>
+        <ul>
+          <li>
+            <a href="https://portfolio2022.hanksberger.workers.dev/"
+              >2022 Portfolio</a
+            >
+            — my previous portfolio site for showing off coding and art
+          </li>
+          <li>
+            <a href="https://hankberger.github.io/PathPlanningThreeJS/"
+              >Motion Planning</a
+            >
+            — agents navigating dynamic obstacles in real-time 3D
+          </li>
+          <li>
+            <a href="https://assets.h4nk.com/splatapp.mp4"
+              >Gaussian Splatting</a
+            >
+            — mobile app for capturing 3D scenes from your phone
+          </li>
+        </ul>
+
+        <h2>Artwork</h2>
+        <p>3D art and motion design made with Houdini, Unreal Engine, and Blender.</p>
+
+        <h2>Links</h2>
+        <ul>
+          <li><a href="https://github.com/hankberger">GitHub</a></li>
+          <li><a href="https://linkedin.com/in/hankberger">LinkedIn</a></li>
+          <li><a href="https://x.com/h4nkdog">X (Twitter)</a></li>
+          <li><a href="https://instagram.com/h4nkdog">Instagram</a></li>
+          <li><a href="/resume">Résumé (PDF)</a></li>
+        </ul>
+      </main>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

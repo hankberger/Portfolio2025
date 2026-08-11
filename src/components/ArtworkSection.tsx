@@ -217,17 +217,18 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
     }
   }, [visible]);
 
-  // Play only the focused video, pause the rest
+  // Play only the focused video, pause the rest. Nothing plays while the
+  // section is still hidden behind "Get Started".
   useEffect(() => {
     videoRefs.current.forEach((video, i) => {
       if (!video) return;
-      if (i === focusedIndex) {
+      if (visible && i === focusedIndex) {
         video.play();
       } else {
         video.pause();
       }
     });
-  }, [focusedIndex]);
+  }, [visible, focusedIndex]);
 
   // Set track padding and apply initial scales on mount + resize
   useEffect(() => {
@@ -245,8 +246,8 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
     };
   }, [visible, scrollToIndex, updateCardScales, updateTrackPadding]);
 
-  if (!visible) return null;
-
+  // Rendered even while PostContent is hidden, so the content is in the DOM
+  // for crawlers. Animations and carousel layout above still key off `visible`.
   return (
     <div className="artwork-section">
       <div className="section-header">
@@ -313,7 +314,6 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
                     videoRefs.current[i] = el;
                   }}
                   src={artwork.video}
-                  autoPlay={i === 0}
                   loop
                   muted
                   playsInline

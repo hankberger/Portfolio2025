@@ -1,0 +1,40 @@
+# Hank Berger
+
+> Personal portfolio of Hank Berger, a developer and motion designer. The site
+> itself is an interactive WebGL experience: a school of dithered 3D fish
+> (Three.js) that follows the pointer, with the portfolio content revealed by a
+> "Get Started" button. This file summarizes that content for agents that do
+> not execute JavaScript.
+
+Hank Berger is a design engineer building interactive experiences — animating
+3D models and designing interfaces that feel good to use.
+
+## Employment
+
+- Software Developer at Epic Systems, working on MyChart Bedside:
+  patient-facing healthcare applications that help people manage their
+  hospital stay and recovery journey.
+
+## Skills
+
+- Web: React, Three.js, WebGL, Node.js
+- Mobile: React Native, iOS, Android
+- Animation: Motion design, Shaders, 3D
+- 3D art tools: Houdini, Unreal Engine, Blender
+
+## Projects
+
+- [2022 Portfolio](https://portfolio2022.hanksberger.workers.dev/): previous
+  portfolio site for showing off coding and art
+- [Motion Planning](https://hankberger.github.io/PathPlanningThreeJS/): agents
+  navigating dynamic obstacles in real-time 3D
+- [Gaussian Splatting](https://assets.h4nk.com/splatapp.mp4): mobile app for
+  capturing 3D scenes from your phone
+
+## Links
+
+- [Résumé (PDF)](https://h4nk.com/resume)
+- [GitHub](https://github.com/hankberger)
+- [LinkedIn](https://linkedin.com/in/hankberger)
+- [X (Twitter)](https://x.com/h4nkdog)
+- [Instagram](https://instagram.com/h4nkdog)

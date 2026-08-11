@@ -68,8 +68,8 @@ export default function AboutMe({ visible }: IAboutMe) {
     }
   }, [visible]);
 
-  if (!visible) return null;
-
+  // Rendered even while PostContent is hidden, so the content is in the DOM
+  // for crawlers. Animations above still key off `visible`.
   return (
     <div className="about-me">
       <div className="section-header">

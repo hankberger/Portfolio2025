@@ -86,10 +86,11 @@ export default function PostContent({ visible }: IPostContent) {
     }
   }, [visible]);
 
-  if (!visible) return null;
-
+  // Stay mounted while collapsed (hidden via CSS) so crawlers that execute JS
+  // see the full content without clicking "Get Started". Entrance animations
+  // and carousel layout are still driven by `visible`.
   return (
-    <div className="post-content">
+    <div className="post-content" hidden={!visible}>
       <div className="content-section">
         {socialLinks.map((social) => (
           <a

@@ -38,8 +38,10 @@ export default function HankCard(props: IHankCard) {
       });
     };
 
-    revealChars("h1");
-    revealChars("h2");
+    // Scope to the card: PostContent is mounted (hidden) from page load for
+    // SEO, so a bare "h1"/"h2" selector would also split its headings.
+    revealChars(".HankCard h1");
+    revealChars(".HankCard h2");
   }, []);
 
   useEffect(() => {

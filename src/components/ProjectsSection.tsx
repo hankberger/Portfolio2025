@@ -203,8 +203,8 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
     };
   }, [visible, scrollToIndex, updateCardScales, updateTrackPadding]);
 
-  if (!visible) return null;
-
+  // Rendered even while PostContent is hidden, so the content is in the DOM
+  // for crawlers. Animations and carousel layout above still key off `visible`.
   return (
     <div className="projects-section">
       <div className="section-header">

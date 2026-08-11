@@ -10,6 +10,13 @@
   padding-bottom: 4rem;
 }
 
+/* The content stays mounted while collapsed (for crawlers), hidden via the
+   `hidden` attribute. `display: flex` above would defeat the browser's default
+   [hidden] rule, so restate it. */
+.post-content[hidden] {
+  display: none;
+}
+
 .content-section {
   display: flex;
   flex-direction: row;
