@@ -4,6 +4,7 @@ import PostContent from "./components/PostContent";
 import PointerHint from "./components/PointerHint";
 import { useFishScene } from "./hooks/useFishScene";
 import { usePointerHint } from "./hooks/usePointerHint";
+import { useTitleFish } from "./hooks/useTitleFish";
 import "./App.css";
 
 // The three-layer stack: a background canvas that captures pointer input, the
@@ -16,6 +17,7 @@ function App() {
   const constraintRef = useRef<HTMLDivElement>(null);
 
   const hint = usePointerHint();
+  useTitleFish();
   const scene = useFishScene({ onPointerInput: hint.notifyPointerInput });
 
   // Expanding the card scatters the fish out of the way, and suppresses the
