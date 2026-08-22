@@ -1,12 +1,16 @@
 import { useEffect } from "react";
 
-// Sends the fish for a lap through the tab title every 30 seconds, then parks
+// Sends the fish for a lap through the tab title every few seconds, then parks
 // it back on the end of the name until the next cycle.
 //
-// The emoji faces left in every major emoji font, so it swims right-to-left:
-// out of its resting spot, through the name a character at a time, and clear
-// off the left side. The jump back to the end happens while it is already past
-// the text, so it reads as the fish having swum away and come back.
+// The emoji faces left in every major emoji font, so it swims right-to-left,
+// out of its resting spot and through the name a character at a time. It stops
+// just past the H rather than carrying on to the front: an emoji ahead of the
+// name shoves the whole title sideways, and a tab title that shifts its left
+// edge reads as a glitch rather than as a fish.
+//
+// The swim ends on a beat with no fish at all, so it reappears at its resting
+// spot rather than visibly teleporting there from beside the H.
 //
 // REST_TITLE must match the <title> in index.html, or the tab flickers to a
 // different string on mount.
@@ -16,17 +20,22 @@ const FISH = "🐟";
 const REST_TITLE = `${NAME} ${FISH}`;
 
 const STEP_DURATION = 140;
-const CYCLE_INTERVAL = 30000;
+const GONE_PAUSE = 450;
+const CYCLE_INTERVAL = 20000;
 
-// One frame per character position, from the end of the name to before the
-// start, plus a final frame with the fish fully clear of the text.
+// One frame per character position, from the end of the name down to the gap
+// after its first letter, then the name on its own. Everything left of the fish
+// stays put, so the title grows rightwards and the first letter never moves.
 const SWIM_FRAMES = [
-  ...Array.from({ length: NAME.length + 1 }, (_, step) => {
+  ...Array.from({ length: NAME.length }, (_, step) => {
     const at = NAME.length - step;
     return `${NAME.slice(0, at)}${FISH}${NAME.slice(at)}`;
   }),
-  `${FISH} ${NAME}`,
+  NAME,
 ];
+
+// The last frame is the fishless beat, which holds longer than a swim step.
+const GONE_FRAME = SWIM_FRAMES.length - 1;
 
 function prefersReducedMotion(): boolean {
   return (
@@ -61,7 +70,10 @@ export function useTitleFish(): void {
 
       if (frame < SWIM_FRAMES.length) {
         document.title = SWIM_FRAMES[frame];
-        timer = setTimeout(tick, STEP_DURATION);
+        timer = setTimeout(
+          tick,
+          frame === GONE_FRAME ? GONE_PAUSE : STEP_DURATION
+        );
         return;
       }
 
