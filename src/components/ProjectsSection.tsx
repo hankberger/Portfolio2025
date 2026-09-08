@@ -48,15 +48,14 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
   });
 
   const focusedRef = useRef(0);
-  const snapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isSnapping = useRef(false);
 
   const updateTrackPadding = useCallback(() => {
     if (!carouselRef.current) return;
     const track = carouselRef.current;
     const card = track.querySelector(".project-card") as HTMLElement | null;
     if (!card) return;
-    const pad = (track.clientWidth - card.offsetWidth) / 2;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    const pad = Math.max(0, (track.clientWidth - card.offsetWidth) / 2 - gap);
     const left = track.querySelector(
       ".carousel-spacer-left",
     ) as HTMLElement | null;
@@ -113,15 +112,6 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
     track.scrollTo({ left: scrollTarget, behavior: "smooth" });
   }, []);
 
-  const snapToNearest = useCallback(() => {
-    if (!carouselRef.current) return;
-    isSnapping.current = true;
-    scrollToIndex(focusedRef.current);
-    setTimeout(() => {
-      isSnapping.current = false;
-    }, 400);
-  }, [scrollToIndex]);
-
   const updateScrollState = useCallback(() => {
     if (!carouselRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
@@ -131,12 +121,7 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
     });
     updateCardScales();
 
-    // Debounce snap — when scrolling stops, lock to nearest card
-    if (!isSnapping.current) {
-      if (snapTimer.current) clearTimeout(snapTimer.current);
-      snapTimer.current = setTimeout(snapToNearest, 100);
-    }
-  }, [updateCardScales, snapToNearest]);
+  }, [updateCardScales]);
 
   const selectCard = (direction: "left" | "right") => {
     const next =
@@ -245,9 +230,12 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                 href={project.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                onFocus={() => {
-                  setFocusedIndex(i);
-                  scrollToIndex(i);
+                onFocus={(event) => {
+                  // Pointer focus must not animate the track during a swipe.
+                  if (event.currentTarget.matches(":focus-visible")) {
+                    setFocusedIndex(i);
+                    scrollToIndex(i);
+                  }
                 }}
               >
                 <div

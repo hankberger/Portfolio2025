@@ -38,6 +38,7 @@ canvas {
 /* Once the card is expanded there is real content to scroll, so give the
    browser its panning gesture back. */
 .stage-bg.scroll-enabled {
+  pointer-events: none;
   touch-action: auto;
 }
 

@@ -165,19 +165,22 @@
   min-width: 0;
   max-width: calc(100% - 4rem);
   overflow: visible;
-  touch-action: pan-x pan-y;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 .carousel-track {
   display: flex;
   gap: 0.75rem;
   overflow-x: auto;
-  scroll-behavior: smooth;
+  overflow-y: hidden;
+  /* Only contain horizontal overscroll. Vertical gestures belong to the page. */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding: 0.25rem 0;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
+  touch-action: pan-x pan-y pinch-zoom;
   mask-image: linear-gradient(
     to right,
     transparent,
@@ -375,7 +378,7 @@
 .projects-carousel-container .carousel-track,
 .artwork-carousel-container .carousel-track {
   gap: 1rem;
-  scroll-snap-type: none;
+  scroll-snap-type: x proximity;
   perspective: 800px;
   position: relative;
   padding-top: 0.65rem;
@@ -398,6 +401,8 @@
 
 .project-card,
 .artwork-card {
+  scroll-snap-align: center;
+  scroll-snap-stop: normal;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;

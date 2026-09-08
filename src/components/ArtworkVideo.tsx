@@ -7,21 +7,22 @@ interface ArtworkVideoProps {
   label: string;
 }
 
-/** Keep posters cheap; load a movie only when selected and actually in view. */
+/** Only load the selected, visible movie; blocked playback leaves a quiet poster. */
 export default function ArtworkVideo({ src, selected, visible, label }: ArtworkVideoProps) {
+  const mediaRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [inView, setInView] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [needsPlay, setNeedsPlay] = useState(false);
+  const [hasFrame, setHasFrame] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const media = mediaRef.current;
+    if (!media) return;
     const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
       threshold: 0.25,
     });
-    observer.observe(video);
+    observer.observe(media);
     return () => observer.disconnect();
   }, []);
 
@@ -37,48 +38,48 @@ export default function ArtworkVideo({ src, selected, visible, label }: ArtworkV
         return;
       }
       setLoaded(true);
-      // The source is committed before this effect's next run.
       if (!loaded) return;
-      video.play().then(() => {
-        if (!cancelled) setNeedsPlay(false);
-      }).catch(() => {
-        if (!cancelled) setNeedsPlay(true);
+      // Set the DOM properties too, before play(), for mobile WebKit.
+      video.defaultMuted = true;
+      video.muted = true;
+      void video.play().catch(() => {
+        if (!cancelled) setHasFrame(false);
       });
     };
-    // Reduced-motion visitors can still load and play intentionally via controls.
-    if (active) setLoaded(true);
     syncPlayback();
     document.addEventListener("visibilitychange", syncPlayback);
+    // A later gesture can unlock playback without presenting any player UI.
+    document.addEventListener("pointerup", syncPlayback, { passive: true });
     motion.addEventListener("change", syncPlayback);
     return () => {
       cancelled = true;
       video.pause();
       document.removeEventListener("visibilitychange", syncPlayback);
+      document.removeEventListener("pointerup", syncPlayback);
       motion.removeEventListener("change", syncPlayback);
     };
   }, [visible, selected, inView, loaded, failed]);
 
   return (
-    <>
+    <div ref={mediaRef} className="artwork-media">
+      <img className="artwork-card-poster" src={src.replace(/\.mp4$/, ".jpg")}
+        alt={label} draggable={false} />
       <video
         ref={videoRef}
         src={loaded && !failed ? src : undefined}
-        poster={src.replace(/\.mp4$/, ".jpg")}
         preload="none"
         loop
         muted
         playsInline
-        controls={selected && loaded && !failed}
-        aria-hidden={!loaded}
-        aria-label={label}
-        className="artwork-card-video"
+        controls={false}
+        disablePictureInPicture
+        disableRemotePlayback
+        aria-hidden="true"
+        tabIndex={-1}
+        className={`artwork-card-video${hasFrame && !failed ? " has-frame" : ""}`}
+        onPlaying={() => setHasFrame(true)}
         onError={() => setFailed(true)}
       />
-      {selected && (needsPlay || failed) && (
-        <p className="artwork-playback-status" role="status">
-          {failed ? "Video unavailable. Showing the preview." : "Use the play control to watch."}
-        </p>
-      )}
-    </>
+    </div>
   );
 }

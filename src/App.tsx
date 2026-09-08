@@ -57,23 +57,6 @@ function App() {
     };
   }, [contentVisible]);
 
-  // The background canvas covers the scroll container, so wheel events land on
-  // the canvas instead. Forward them through.
-  useEffect(() => {
-    const bgCanvas = scene.bgCanvasRef.current;
-    if (!scrollEnabled || !bgCanvas) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      const container = constraintRef.current;
-      if (!container) return;
-      container.scrollTop += e.deltaY;
-      e.preventDefault();
-    };
-
-    bgCanvas.addEventListener("wheel", handleWheel, { passive: false });
-    return () => bgCanvas.removeEventListener("wheel", handleWheel);
-  }, [scrollEnabled, scene.bgCanvasRef]);
-
   return (
     <div className="stage">
       {/* Background layer: pointer surface for fish steering. Nothing is drawn here. */}
