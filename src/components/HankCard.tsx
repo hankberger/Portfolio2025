@@ -157,7 +157,7 @@ export default function HankCard(props: IHankCard) {
             <span className="buttonContent">
               {!bigButton ? (
                 <>
-                  View my work
+                  Get Started
                   <svg
                     className="buttonIcon"
                     xmlns="http://www.w3.org/2000/svg"
@@ -194,11 +194,6 @@ export default function HankCard(props: IHankCard) {
               />
             )}
           </div>
-          <p className="hero-description">Interactive websites, 3D experiences, and motion design.</p>
-          <nav className="hero-links" aria-label="Contact and résumé" data-fish-ignore>
-            <a href="/resume" target="_blank" rel="noopener noreferrer">Résumé</a>
-            <a href="https://linkedin.com/in/hankberger" target="_blank" rel="noopener noreferrer">Connect on LinkedIn</a>
-          </nav>
         </div>
       </div>
     </div>
