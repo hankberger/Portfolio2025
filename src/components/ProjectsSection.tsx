@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { animate, stagger, easings } from "animejs";
+import { createProjectLinkGesture } from "./projectLinkGesture";
 import "./styles/ProjectsSection.css";
 
 interface IProjectsSection {
@@ -48,6 +49,37 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
   });
 
   const focusedRef = useRef(0);
+  const [linkGesture] = useState(createProjectLinkGesture);
+
+  useEffect(() => {
+    if (!visible) return;
+    const move = (event: PointerEvent) => linkGesture.move(event.pointerId, event.clientX, event.clientY);
+    const end = (event: PointerEvent) => linkGesture.end(event.pointerId, event.clientX, event.clientY);
+    const cancel = (event: PointerEvent) => linkGesture.cancel(event.pointerId);
+    const scroll = (event: Event) => {
+      const track = carouselRef.current;
+      const target = event.target;
+      // Watch the horizontal track AND its vertically scrolling ancestors.
+      if (track && target instanceof Node && target.contains(track)) {
+        linkGesture.scroll(performance.now());
+      }
+    };
+    // Capture movement even if the gesture starts outside a card or is canceled
+    // when the browser takes over panning. Never cancel the scroll events.
+    document.addEventListener("pointerdown", linkGesture.reset, { capture: true, passive: true });
+    document.addEventListener("pointermove", move, { capture: true, passive: true });
+    document.addEventListener("pointerup", end, { capture: true, passive: true });
+    document.addEventListener("pointercancel", cancel, { capture: true, passive: true });
+    document.addEventListener("scroll", scroll, { capture: true, passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", linkGesture.reset, true);
+      document.removeEventListener("pointermove", move, true);
+      document.removeEventListener("pointerup", end, true);
+      document.removeEventListener("pointercancel", cancel, true);
+      document.removeEventListener("scroll", scroll, true);
+      linkGesture.reset();
+    };
+  }, [visible, linkGesture]);
 
   const updateTrackPadding = useCallback(() => {
     if (!carouselRef.current) return;
@@ -230,6 +262,17 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                 href={project.link}
                 target="_blank"
                 rel="noopener noreferrer"
+                draggable={false}
+                onPointerDown={(event) => {
+                  if (!event.isPrimary || event.button > 1) return;
+                  linkGesture.start(i, event.pointerId, event.clientX, event.clientY, performance.now());
+                }}
+                onClick={(event) => {
+                  if (!linkGesture.consume(i, event.detail)) event.preventDefault();
+                }}
+                onAuxClick={(event) => {
+                  if (event.button === 1 && !linkGesture.consume(i, event.detail)) event.preventDefault();
+                }}
                 onFocus={(event) => {
                   // Pointer focus must not animate the track during a swipe.
                   if (event.currentTarget.matches(":focus-visible")) {
@@ -245,7 +288,7 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                   }
                 >
                   {project.image && (
-                    <img src={project.image} alt="" />
+                    <img src={project.image} alt="" draggable={false} />
                   )}
                 </div>
                 <div className="project-card-info">
