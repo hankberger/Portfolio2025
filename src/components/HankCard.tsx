@@ -32,16 +32,16 @@ export default function HankCard(props: IHankCard) {
           // the function itself: `ease: easings.eases.inBounce`.
           ease: "linear",
           duration: 400,
-          delay: stagger(55, { start: 1200 }),
+          delay: stagger(55, { start: 100 }),
         },
-        x: [{ from: "1rem", to: "0rem", delay: stagger(50, { start: 1200 }) }],
+        x: [{ from: "1rem", to: "0rem", delay: stagger(50, { start: 100 }) }],
       });
     };
 
     // Scope to the card: PostContent is mounted (hidden) from page load for
     // SEO, so a bare "h1"/"h2" selector would also split its headings.
     revealChars(".HankCard h1");
-    revealChars(".HankCard h2");
+    // Keep the subtitle intact so narrow screens wrap at word boundaries.
   }, []);
 
   useEffect(() => {
@@ -50,10 +50,10 @@ export default function HankCard(props: IHankCard) {
         from: 0,
         to: 1,
         ease: "linear", // see the note in the heading reveal above
-        delay: 1750,
+        delay: 0,
         duration: 400,
       },
-      y: [{ from: ".5rem", to: "0rem", delay: 1750 }],
+      y: [{ from: ".5rem", to: "0rem", delay: 0 }],
     });
   }, []);
 
@@ -71,25 +71,11 @@ export default function HankCard(props: IHankCard) {
     }
   }, [bigButton]);
 
-  const toggle = async () => {
+  const toggle = () => {
     hasToggled.current = true;
-
-    // App owns the scroll container and the fish, and reacts to this.
-    props.onExpandChange?.(!bigButton);
-    // Fade out current button (moves down, mirrors the fade in)
-    await animate(".getStarted", {
-      opacity: {
-        from: 1,
-        to: 0,
-        duration: 200,
-        ease: easings.eases.outQuad,
-      },
-      y: [{ from: "0rem", to: "0.5rem", ease: easings.eases.outQuad }],
-      duration: 200,
-      ease: easings.eases.outQuad,
-    }).then(() => {
-      setBigButton(!bigButton);
-    });
+    const expanded = !bigButton;
+    setBigButton(expanded);
+    props.onExpandChange?.(expanded);
   };
 
   // Fade in new button after state change (same as mount animation)
@@ -165,11 +151,13 @@ export default function HankCard(props: IHankCard) {
             <button
               className={`getStarted${bigButton ? " active" : ""}`}
               onClick={toggle}
+              aria-expanded={bigButton}
+              aria-controls="portfolio-content"
             >
             <span className="buttonContent">
               {!bigButton ? (
                 <>
-                  Get Started
+                  View my work
                   <svg
                     className="buttonIcon"
                     xmlns="http://www.w3.org/2000/svg"
@@ -206,6 +194,11 @@ export default function HankCard(props: IHankCard) {
               />
             )}
           </div>
+          <p className="hero-description">Interactive websites, 3D experiences, and motion design.</p>
+          <nav className="hero-links" aria-label="Contact and résumé" data-fish-ignore>
+            <a href="/resume" target="_blank" rel="noopener noreferrer">Résumé</a>
+            <a href="https://linkedin.com/in/hankberger" target="_blank" rel="noopener noreferrer">Connect on LinkedIn</a>
+          </nav>
         </div>
       </div>
     </div>

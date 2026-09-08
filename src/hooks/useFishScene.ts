@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createScene, type SceneHandle } from "../scene";
-import { isVRSupported } from "../scene/xr";
+import type { SceneHandle } from "../scene";
 
 // The only bridge between React and the Three.js scene. The scene is created
 // once on mount and driven imperatively after that — it must never be rebuilt
@@ -26,6 +25,7 @@ export function useFishScene(options: UseFishSceneOptions = {}): FishScene {
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<SceneHandle | null>(null);
+  const scatterRef = useRef(false);
 
   const [vrSupported, setVrSupported] = useState(false);
   const [vrActive, setVrActive] = useState(false);
@@ -40,32 +40,38 @@ export function useFishScene(options: UseFishSceneOptions = {}): FishScene {
     const fgCanvas = fgCanvasRef.current;
     if (!bgCanvas || !fgCanvas) return;
 
-    const scene = createScene({
-      bgCanvas,
-      fgCanvas,
-      onPointerInput: () => onPointerInputRef.current?.(),
-      onVRActiveChange: setVrActive,
-    });
-    sceneRef.current = scene;
-
-    return () => {
-      sceneRef.current = null;
-      scene.dispose();
-    };
-  }, []);
-
-  // Gate the VR button on actual support, so desktop and mobile never see it.
-  useEffect(() => {
     let cancelled = false;
-    isVRSupported().then((supported) => {
-      if (!cancelled) setVrSupported(supported);
-    });
+    // Let essential content paint before loading the optional graphics bundle.
+    const timer = window.setTimeout(async () => {
+      try {
+        const { createScene } = await import("../scene");
+        if (cancelled) return;
+        const scene = createScene({
+          bgCanvas,
+          fgCanvas,
+          onPointerInput: () => onPointerInputRef.current?.(),
+          onVRActiveChange: setVrActive,
+        });
+        sceneRef.current = scene;
+        scene.setScatter(scatterRef.current);
+        const supported = await navigator.xr?.isSessionSupported("immersive-vr");
+        if (!cancelled) setVrSupported(supported ?? false);
+      } catch (error) {
+        // A missing graphics chunk or unavailable WebGL must not unmount React.
+        console.warn("Fish graphics unavailable; portfolio remains usable.", error);
+      }
+    }, 200);
+
     return () => {
       cancelled = true;
+      window.clearTimeout(timer);
+      sceneRef.current?.dispose();
+      sceneRef.current = null;
     };
   }, []);
 
   const setScatter = useCallback((scatter: boolean) => {
+    scatterRef.current = scatter;
     sceneRef.current?.setScatter(scatter);
   }, []);
 

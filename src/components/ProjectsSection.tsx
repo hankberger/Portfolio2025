@@ -219,7 +219,7 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
         <button
           className="carousel-btn carousel-btn-left"
           onClick={() => selectCard("left")}
-          aria-label="Scroll left"
+          aria-label="Previous project"
         >
           <svg
             viewBox="0 0 24 24"
@@ -239,16 +239,15 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
           >
             <div className="carousel-spacer-left" />
             {projects.map((project, i) => (
-              <div
+              <a
                 key={project.id}
                 className="project-card"
-                onClick={() => {
-                  if (focusedIndex === i && project.link) {
-                    window.open(project.link, "_blank", "noopener,noreferrer");
-                  } else {
-                    flushSync(() => setFocusedIndex(i));
-                    requestAnimationFrame(() => scrollToIndex(i));
-                  }
+                href={project.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                onFocus={() => {
+                  setFocusedIndex(i);
+                  scrollToIndex(i);
                 }}
               >
                 <div
@@ -258,7 +257,7 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                   }
                 >
                   {project.image && (
-                    <img src={project.image} alt={project.name} />
+                    <img src={project.image} alt="" />
                   )}
                 </div>
                 <div className="project-card-info">
@@ -289,7 +288,7 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
                     ))}
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
             <div className="carousel-spacer-right" />
           </div>
@@ -298,7 +297,7 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
         <button
           className="carousel-btn carousel-btn-right"
           onClick={() => selectCard("right")}
-          aria-label="Scroll right"
+          aria-label="Next project"
         >
           <svg
             viewBox="0 0 24 24"

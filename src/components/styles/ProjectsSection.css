@@ -42,9 +42,9 @@
 .project-description {
   padding: 0 1rem 0.75rem;
   font-family: "DM Sans", sans-serif;
-  font-size: 0.8rem;
+  font-size: max(14px, 0.8rem);
   font-weight: 300;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1.4;
 }
 
@@ -62,9 +62,9 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 4px;
   font-family: "DM Sans", sans-serif;
-  font-size: 0.65rem;
+  font-size: max(12px, 0.65rem);
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
 }
 
@@ -105,7 +105,7 @@
 .project-card-info {
   position: relative;
   margin-top: auto;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 15, 55, 0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
@@ -127,7 +127,7 @@
 
 /* Layout: the carousel needs its buttons overlaid and its track clamped on any
    narrow viewport, portrait or not, or it overflows. */
-@media (orientation: portrait), (max-width: 1350px) {
+@media (orientation: portrait), (max-width: 1600px) {
   .projects-carousel-container {
     position: relative;
     padding: 0 !important;
@@ -156,8 +156,8 @@
   }
 
   .project-card {
-    width: clamp(160px, calc(100vw - 14rem), 240px);
-    min-width: clamp(160px, calc(100vw - 14rem), 240px);
+    width: clamp(160px, calc(100vw - 8rem), 240px);
+    min-width: clamp(160px, calc(100vw - 8rem), 240px);
     aspect-ratio: 160 / 250;
     height: auto !important;
   }

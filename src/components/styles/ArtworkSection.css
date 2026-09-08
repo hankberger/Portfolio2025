@@ -115,7 +115,7 @@
 
 /* Layout: the carousel needs its buttons overlaid and its track clamped on any
    narrow viewport, portrait or not, or it overflows. */
-@media (orientation: portrait), (max-width: 1350px) {
+@media (orientation: portrait), (max-width: 1600px) {
   .artwork-carousel-container {
     position: relative;
     padding: 0 !important;
@@ -149,4 +149,30 @@
     aspect-ratio: 160 / 250;
     height: auto !important;
   }
+}
+
+.artwork-select {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  background: transparent;
+  border: 0;
+  color: white;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  text-shadow: 0 1px 4px black;
+}
+.artwork-playback-status {
+  position: absolute;
+  top: 0;
+  margin: 0;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 14px;
+  pointer-events: none;
 }

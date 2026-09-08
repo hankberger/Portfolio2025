@@ -90,7 +90,7 @@ export default function PostContent({ visible }: IPostContent) {
   // see the full content without clicking "Get Started". Entrance animations
   // and carousel layout are still driven by `visible`.
   return (
-    <div className="post-content" hidden={!visible}>
+    <div id="portfolio-content" className="post-content" hidden={!visible}>
       <div className="content-section">
         {socialLinks.map((social) => (
           <a

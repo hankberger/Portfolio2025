@@ -324,7 +324,7 @@ a {
 /*
  * IMPORTANT: two different concerns, deliberately kept in separate queries.
  *
- * These rules used to share one `(orientation: portrait), (max-width: 1350px)`
+ * These rules used to share one `(orientation: portrait), (max-width: 1600px)`
  * query. That comma is an OR, so all of them fired on *landscape* viewports
  * under 1350px as well — and OS display scaling puts plenty of ordinary
  * landscape monitors there (1080p at 150% scaling reports a 1280px viewport,
@@ -343,7 +343,7 @@ a {
  */
 
 /* Layout: stack the card when the viewport is narrow OR portrait. */
-@media (orientation: portrait), (max-width: 1350px) {
+@media (orientation: portrait), (max-width: 1600px) {
   .constraint {
     flex-direction: column;
     justify-content: flex-start;
@@ -431,4 +431,45 @@ a {
 .constraint.scrollable {
   overflow-y: auto;
   pointer-events: auto;
+}
+
+.HankCard { max-width: 100%; }
+.title.row > .column { min-width: 0; }
+.hero-description {
+  font-size: max(14px, 0.8rem);
+  font-weight: 300;
+  line-height: 1.5;
+  max-width: 32ch;
+  margin: 1rem 0 0;
+}
+.hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  pointer-events: auto;
+}
+.hero-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: max(14px, 0.75rem);
+  color: white;
+  text-underline-offset: 4px;
+}
+@media (orientation: portrait), (max-width: 1600px) {
+  .HankCard { width: 90%; }
+  .hero-links { justify-content: center; }
+}
+
+/* Short landscape screens need the entry actions to fit before scrolling opens. */
+@media (orientation: landscape) and (max-height: 550px) and (max-width: 1600px) {
+  .constraint { padding-block: 1rem; }
+  .title.row { flex-direction: row; }
+  .video-container, .video-container video, .fallback-image {
+    width: 100px;
+    height: 100px;
+  }
+  .HankCard h1 { font-size: 2rem; }
+  .HankCard h2 { font-size: 1rem; margin-top: 0; }
+  .hero-description { margin-top: 0.5rem; }
 }

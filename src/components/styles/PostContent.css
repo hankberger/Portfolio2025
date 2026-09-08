@@ -5,6 +5,7 @@
   pointer-events: auto;
   flex: 1;
   max-width: 600px;
+  min-width: 0;
   align-self: flex-start;
   padding-top: 35vh;
   padding-bottom: 4rem;
@@ -140,7 +141,7 @@
 }
 
 .hello-card.expanded .expanded-content {
-  max-height: 300px;
+  max-height: none;
   opacity: 1;
   margin-top: 1rem;
   overflow: hidden;
@@ -503,7 +504,7 @@
 }
 
 /* Layout: applies to narrow viewports of any orientation. See HankCard.css. */
-@media (orientation: portrait), (max-width: 1350px) {
+@media (orientation: portrait), (max-width: 1600px) {
   .post-content {
     width: 90%;
     margin: 2rem auto 0;
@@ -536,3 +537,25 @@
     height: 2.5rem;
   }
 }
+
+/* Keyboard focus remains visible inside the clipped carousel tracks. */
+a:focus-visible, button:focus-visible {
+  outline: 3px solid white;
+  outline-offset: -3px;
+}
+.read-more-button {
+  min-height: 44px;
+  font-size: max(14px, 0.65rem);
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.9);
+}
+.carousel-btn,
+.projects-carousel-container .carousel-btn,
+.artwork-carousel-container .carousel-btn {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  flex-basis: 44px;
+}
+.hello-card { cursor: default; }
+.project-name { font-size: max(16px, 1rem); }

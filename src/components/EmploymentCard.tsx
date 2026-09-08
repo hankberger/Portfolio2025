@@ -50,7 +50,6 @@ export default function EmploymentCard() {
   return (
     <div
       className={`hello-card column ${expanded ? "expanded" : ""}`}
-      onClick={() => setExpanded(!expanded)}
     >
       <div className="row">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
@@ -60,11 +59,11 @@ export default function EmploymentCard() {
       </div>
 
       <div>
-        <h1 className="hello-title">Software Developer</h1>
-        <h2 className="hello-sub"> Epic Systems | MyChart Bedside</h2>
+        <h2 className="hello-title">Software Developer</h2>
+        <p className="hello-sub">Epic Systems | MyChart Bedside</p>
       </div>
 
-      <div className="expanded-content">
+      <div id="employment-details" className="expanded-content" hidden={!expanded}>
         <p>
           Building patient-facing healthcare applications that help people
           manage their hospital stay and recovery journey.
@@ -76,7 +75,7 @@ export default function EmploymentCard() {
               e.stopPropagation();
               scrollCarousel("left");
             }}
-            aria-label="Scroll left"
+            aria-label="Previous employment link"
           >
             <svg
               viewBox="0 0 24 24"
@@ -116,7 +115,7 @@ export default function EmploymentCard() {
               e.stopPropagation();
               scrollCarousel("right");
             }}
-            aria-label="Scroll right"
+            aria-label="Next employment link"
           >
             <svg
               viewBox="0 0 24 24"
@@ -130,8 +129,10 @@ export default function EmploymentCard() {
         </div>
       </div>
 
-      <div className={`read-more-button ${expanded ? "expanded" : ""}`}>
-        <span>{expanded ? "Show less" : "Click to read more"}</span>
+      <button type="button" className={`read-more-button ${expanded ? "expanded" : ""}`}
+        aria-expanded={expanded} aria-controls="employment-details"
+        onClick={() => setExpanded(!expanded)}>
+        <span>{expanded ? "Show less" : "Read about my work"}</span>
         <svg
           className="chevron-icon"
           viewBox="0 0 24 24"
@@ -143,7 +144,7 @@ export default function EmploymentCard() {
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
-      </div>
+      </button>
     </div>
   );
 }

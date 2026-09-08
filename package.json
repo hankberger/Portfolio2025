@@ -7,6 +7,7 @@
     "dev": "vite",
     "lint": "eslint .",
     "smoke": "tsx scripts/flock-smoke.ts",
+    "test:http": "node --test scripts/http-smoke.mjs",
     "preview": "vite preview",
     "serve:dist": "tsx --tsconfig tsconfig.server.json server.ts",
     "build:client": "tsc -b && vite build",

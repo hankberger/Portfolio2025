@@ -1,3 +1,4 @@
+import ArtworkVideo from "./ArtworkVideo";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { animate, stagger, easings } from "animejs";
@@ -71,7 +72,6 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
   const focusedRef = useRef(0);
   const snapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSnapping = useRef(false);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const updateTrackPadding = useCallback(() => {
     if (!carouselRef.current) return;
@@ -217,19 +217,6 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
     }
   }, [visible]);
 
-  // Play only the focused video, pause the rest. Nothing plays while the
-  // section is still hidden behind "Get Started".
-  useEffect(() => {
-    videoRefs.current.forEach((video, i) => {
-      if (!video) return;
-      if (visible && i === focusedIndex) {
-        video.play();
-      } else {
-        video.pause();
-      }
-    });
-  }, [visible, focusedIndex]);
-
   // Set track padding and apply initial scales on mount + resize
   useEffect(() => {
     if (!visible) return;
@@ -279,7 +266,7 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
         <button
           className="carousel-btn carousel-btn-left"
           onClick={() => selectCard("left")}
-          aria-label="Scroll left"
+          aria-label="Previous artwork"
         >
           <svg
             viewBox="0 0 24 24"
@@ -302,23 +289,16 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
               <div
                 key={artwork.id}
                 className="artwork-card"
-                onClick={() => {
-                  if (focusedIndex !== i) {
-                    flushSync(() => setFocusedIndex(i));
-                    requestAnimationFrame(() => scrollToIndex(i));
-                  }
-                }}
               >
-                <video
-                  ref={(el) => {
-                    videoRefs.current[i] = el;
-                  }}
-                  src={artwork.video}
-                  loop
-                  muted
-                  playsInline
-                  className="artwork-card-video"
-                />
+                <ArtworkVideo src={artwork.video} selected={focusedIndex === i}
+                  visible={visible} label={`Motion artwork ${i + 1}`} />
+                {focusedIndex !== i && (
+                  <button className="artwork-select" aria-label={`Select artwork ${i + 1}`}
+                    onClick={() => {
+                      flushSync(() => setFocusedIndex(i));
+                      requestAnimationFrame(() => scrollToIndex(i));
+                    }}>View artwork {i + 1}</button>
+                )}
               </div>
             ))}
             <div className="carousel-spacer-right" />
@@ -328,7 +308,7 @@ export default function ArtworkSection({ visible }: IArtworkSection) {
         <button
           className="carousel-btn carousel-btn-right"
           onClick={() => selectCard("right")}
-          aria-label="Scroll right"
+          aria-label="Next artwork"
         >
           <svg
             viewBox="0 0 24 24"

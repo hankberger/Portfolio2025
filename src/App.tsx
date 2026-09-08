@@ -78,6 +78,7 @@ function App() {
     <div className="stage">
       {/* Background layer: pointer surface for fish steering. Nothing is drawn here. */}
       <canvas
+        aria-hidden="true"
         ref={scene.bgCanvasRef}
         className={`stage-bg${scrollEnabled ? " scroll-enabled" : ""}`}
       />
@@ -104,7 +105,7 @@ function App() {
       )}
 
       {/* Foreground layer: the fish, drawn over the UI */}
-      <canvas ref={scene.fgCanvasRef} className="stage-fg" />
+      <canvas aria-hidden="true" ref={scene.fgCanvasRef} className="stage-fg" />
     </div>
   );
 }

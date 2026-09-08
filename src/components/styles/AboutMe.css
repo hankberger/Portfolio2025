@@ -55,7 +55,7 @@
 .about-description p {
   margin: 0 0 0.75rem;
   font-family: "DM Sans", sans-serif;
-  font-size: 0.95rem;
+  font-size: max(15px, 0.95rem);
   font-weight: 300;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
@@ -89,14 +89,14 @@
 
 .skill-detail-label {
   font-family: "DM Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: max(14px, 0.875rem);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .skill-detail-desc {
   font-family: "DM Sans", sans-serif;
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 300;
   color: rgba(255, 255, 255, 0.6);
 }
@@ -116,10 +116,10 @@
   }
 
   .skill-detail-label {
-    font-size: 0.9rem;
+    font-size: max(14px, 0.9rem);
   }
 
   .skill-detail-desc {
-    font-size: 0.75rem;
+    font-size: max(12px, 0.75rem);
   }
 }
