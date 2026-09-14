@@ -10,6 +10,15 @@ interface IProjectsSection {
 
 const projects = [
   {
+    id: "project-4",
+    name: "Banana",
+    description: "An interactive 3D web experience featuring a dolphin",
+    tags: ["Three.js", "Web", "3D"],
+    gradient: "linear-gradient(135deg, #1f2937, #f59e0b)",
+    image: "/dolp.webp",
+    link: "https://banana.h4nk.com/",
+  },
+  {
     id: "project-3",
     name: "2022 Portfolio",
     description: "My previous portfolio site for showing off coding and art",

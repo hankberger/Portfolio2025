@@ -24,6 +24,8 @@ Hank Berger is a design engineer building interactive experiences — animating
 
 ## Projects
 
+- [Banana](https://banana.h4nk.com/): an interactive 3D web experience
+  featuring a dolphin
 - [2022 Portfolio](https://portfolio2022.hanksberger.workers.dev/): previous
   portfolio site for showing off coding and art
 - [Motion Planning](https://hankberger.github.io/PathPlanningThreeJS/): agents

@@ -124,6 +124,8 @@ export default function HankCard(props: IHankCard) {
                 muted
                 loop
                 playsInline
+                aria-hidden="true"
+                tabIndex={-1}
                 style={{ opacity: introVideoDone ? 1 : 0 }}
                 onError={() => setVideoFailed(true)}
                 webkit-playsinline="true"
@@ -134,6 +136,8 @@ export default function HankCard(props: IHankCard) {
                 autoPlay
                 muted
                 playsInline
+                aria-hidden="true"
+                tabIndex={-1}
                 loop={false}
                 onEnded={() => setIntroVideoDone(true)}
                 onError={() => setVideoFailed(true)}
