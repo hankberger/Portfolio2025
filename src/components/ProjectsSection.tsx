@@ -11,8 +11,8 @@ interface IProjectsSection {
 const projects = [
   {
     id: "project-4",
-    name: "Banana",
-    description: "An interactive 3D web experience featuring a dolphin",
+    name: "Banana City",
+    description: "A collaborative world built using Nano Banana",
     tags: ["Three.js", "Web", "3D"],
     gradient: "linear-gradient(135deg, #1f2937, #f59e0b)",
     image: "/dolp.webp",
