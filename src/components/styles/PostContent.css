@@ -121,6 +121,10 @@
 .expanded-content {
   max-height: 0;
   overflow: hidden;
+  /* A flex item whose overflow is hidden has an automatic minimum size of 0, so
+     the card's column layout was shrinking this panel and clipping the carousel
+     off the bottom. Its height comes from max-height, never from flex. */
+  flex-shrink: 0;
   opacity: 0;
   transition:
     max-height 0.4s ease,
@@ -140,11 +144,19 @@
   line-height: 1.6;
 }
 
+/* max-height is set inline from the measured content height in
+   EmploymentCard.tsx -- a fixed cap clipped the copy at narrow widths and
+   `none` cannot be transitioned, so neither works here. */
 .hello-card.expanded .expanded-content {
-  max-height: none;
   opacity: 1;
   margin-top: 1rem;
   overflow: hidden;
+}
+
+/* Establishes a block formatting context so the carousel's bottom margin is
+   contained, and therefore included in the measured height. */
+.expanded-content-inner {
+  display: flow-root;
 }
 
 /* Carousel */

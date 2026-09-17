@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const carouselLinks: { name: string; url: string }[] = [
   {
@@ -22,10 +22,31 @@ const carouselLinks: { name: string; url: string }[] = [
 export default function EmploymentCard() {
   const [expanded, setExpanded] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
+  const [detailsHeight, setDetailsHeight] = useState(0);
   const [scrollState, setScrollState] = useState({
     atStart: true,
     atEnd: false,
   });
+
+  // The slide-open animation transitions max-height, which needs a concrete
+  // pixel target -- `none` cannot be interpolated. Measure the unclamped inner
+  // wrapper on every toggle, and keep observing it so copy reflowing on resize
+  // or rotation cannot leave an open card clipped.
+  useEffect(() => {
+    const inner = detailsRef.current;
+    if (!inner) return;
+
+    const measure = () => setDetailsHeight(inner.offsetHeight);
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(inner);
+
+    return () => observer.disconnect();
+  }, [expanded]);
+
+  const toggleExpanded = () => setExpanded((open) => !open);
 
   const updateScrollState = () => {
     if (carouselRef.current) {
@@ -48,8 +69,12 @@ export default function EmploymentCard() {
   };
 
   return (
+    // The card is a convenience click target for pointer users; the
+    // "Read about my work" button below is the real control, so keyboard and
+    // screen-reader users still get a labelled, aria-expanded toggle.
     <div
       className={`hello-card column ${expanded ? "expanded" : ""}`}
+      onClick={toggleExpanded}
     >
       <div className="row">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
@@ -63,75 +88,87 @@ export default function EmploymentCard() {
         <p className="hello-sub">Epic Systems | MyChart Bedside</p>
       </div>
 
-      <div id="employment-details" className="expanded-content" hidden={!expanded}>
-        <p>
-          Building patient-facing healthcare applications that help people
-          manage their hospital stay and recovery journey.
-        </p>
-        <div className="carousel-container">
-          <button
-            className="carousel-btn carousel-btn-left"
-            onClick={(e) => {
-              e.stopPropagation();
-              scrollCarousel("left");
-            }}
-            aria-label="Previous employment link"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+      <div
+        id="employment-details"
+        className="expanded-content"
+        style={{ maxHeight: expanded ? `${detailsHeight}px` : 0 }}
+        inert={!expanded}
+      >
+        <div className="expanded-content-inner" ref={detailsRef}>
+          <p>
+            Building patient-facing healthcare applications that help people
+            manage their hospital stay and recovery journey.
+          </p>
+          <div className="carousel-container">
+            <button
+              className="carousel-btn carousel-btn-left"
+              onClick={(e) => {
+                e.stopPropagation();
+                scrollCarousel("left");
+              }}
+              aria-label="Previous employment link"
             >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <div
-            className="carousel-track-wrapper"
-            onClick={(e) => e.stopPropagation()}
-          >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
             <div
-              className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
-              ref={carouselRef}
-              onScroll={updateScrollState}
+              className="carousel-track-wrapper"
+              onClick={(e) => e.stopPropagation()}
             >
-              {carouselLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="carousel-link"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {link.name}
-                </a>
-              ))}
+              <div
+                className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
+                ref={carouselRef}
+                onScroll={updateScrollState}
+              >
+                {carouselLinks.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="carousel-link"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {link.name}
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
-          <button
-            className="carousel-btn carousel-btn-right"
-            onClick={(e) => {
-              e.stopPropagation();
-              scrollCarousel("right");
-            }}
-            aria-label="Next employment link"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
+            <button
+              className="carousel-btn carousel-btn-right"
+              onClick={(e) => {
+                e.stopPropagation();
+                scrollCarousel("right");
+              }}
+              aria-label="Next employment link"
             >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
       <button type="button" className={`read-more-button ${expanded ? "expanded" : ""}`}
         aria-expanded={expanded} aria-controls="employment-details"
-        onClick={() => setExpanded(!expanded)}>
+        onClick={(e) => {
+          // The card handles the click too -- don't toggle twice.
+          e.stopPropagation();
+          toggleExpanded();
+        }}
+      >
         <span>{expanded ? "Show less" : "Read about my work"}</span>
         <svg
           className="chevron-icon"
