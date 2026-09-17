@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import type { CSSProperties } from "react";
+import { useEffect, useRef, useState } from "react";
 import { animate, stagger, easings } from "animejs";
 import { createProjectLinkGesture } from "./projectLinkGesture";
 import "./styles/ProjectsSection.css";
@@ -12,36 +12,52 @@ const projects = [
   {
     id: "project-4",
     name: "Banana City",
+    title: ["Banana", "City"],
     description: "A collaborative world built using Nano Banana",
+    blurb:
+      "A shared 3D city that anyone can add to. Visitors generate a building with Nano Banana, drop it on an open lot, and it joins the skyline for everyone who shows up after them.",
     tags: ["Three.js", "Web", "3D"],
     gradient: "linear-gradient(135deg, #1f2937, #f59e0b)",
+    accent: "rgba(245, 158, 11, 0.45)",
     image: "/dolp.webp",
     link: "https://banana.h4nk.com/",
   },
   {
     id: "project-3",
     name: "2022 Portfolio",
+    title: ["2022", "Portfolio"],
     description: "My previous portfolio site for showing off coding and art",
+    blurb:
+      "The site this one replaced. A WebGL portfolio built to put my code and my 3D art on the same page — still online because I like the way it moves.",
     tags: ["Web", "Design"],
     gradient: "linear-gradient(135deg, #f093fb, #f5576c)",
+    accent: "rgba(245, 87, 108, 0.45)",
     image: "/portfolio2022.webp",
     link: "https://portfolio2022.hanksberger.workers.dev/",
   },
   {
     id: "project-1",
     name: "Motion Planning",
+    title: ["Motion", "Planning"],
     description: "Agents navigating dynamic obstacles in real-time 3D",
+    blurb:
+      "A real-time playground for path planning. Agents negotiate a field of moving obstacles and re-plan every frame, with the search drawn on top so you can watch the algorithm think.",
     tags: ["Three.js", "Web", "Animation"],
     gradient: "linear-gradient(135deg, #667eea, #764ba2)",
+    accent: "rgba(139, 156, 255, 0.5)",
     image: "/pathplanning.webp",
     link: "https://hankberger.github.io/PathPlanningThreeJS/",
   },
   {
     id: "project-2",
     name: "Gaussian Splatting",
+    title: ["Gaussian", "Splatting"],
     description: "Mobile app for capturing 3D scenes from your phone",
+    blurb:
+      "Point your phone at something, walk around it, and get a 3D scene back. A capture app that feeds photogrammetry into a Gaussian splat pipeline and renders the result on device.",
     tags: ["Mobile", "Python"],
     gradient: "linear-gradient(135deg, #4facfe, #00f2fe)",
+    accent: "rgba(79, 172, 254, 0.5)",
     image: "/splatapp.webp",
     video: true,
     link: "https://assets.h4nk.com/splatapp.mp4",
@@ -50,31 +66,18 @@ const projects = [
 
 export default function ProjectsSection({ visible }: IProjectsSection) {
   const hasAnimated = useRef(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [focusedIndex, setFocusedIndex] = useState(0);
-  const [scrollState, setScrollState] = useState({
-    atStart: true,
-    atEnd: false,
-  });
-
-  const focusedRef = useRef(0);
   const [linkGesture] = useState(createProjectLinkGesture);
 
+  // The page scrolls vertically under the buttons, so a flick that happens to
+  // start on one must not open the project.
   useEffect(() => {
     if (!visible) return;
-    const move = (event: PointerEvent) => linkGesture.move(event.pointerId, event.clientX, event.clientY);
-    const end = (event: PointerEvent) => linkGesture.end(event.pointerId, event.clientX, event.clientY);
+    const move = (event: PointerEvent) =>
+      linkGesture.move(event.pointerId, event.clientX, event.clientY);
+    const end = (event: PointerEvent) =>
+      linkGesture.end(event.pointerId, event.clientX, event.clientY);
     const cancel = (event: PointerEvent) => linkGesture.cancel(event.pointerId);
-    const scroll = (event: Event) => {
-      const track = carouselRef.current;
-      const target = event.target;
-      // Watch the horizontal track AND its vertically scrolling ancestors.
-      if (track && target instanceof Node && target.contains(track)) {
-        linkGesture.scroll(performance.now());
-      }
-    };
-    // Capture movement even if the gesture starts outside a card or is canceled
-    // when the browser takes over panning. Never cancel the scroll events.
+    const scroll = () => linkGesture.scroll(performance.now());
     document.addEventListener("pointerdown", linkGesture.reset, { capture: true, passive: true });
     document.addEventListener("pointermove", move, { capture: true, passive: true });
     document.addEventListener("pointerup", end, { capture: true, passive: true });
@@ -89,89 +92,6 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
       linkGesture.reset();
     };
   }, [visible, linkGesture]);
-
-  const updateTrackPadding = useCallback(() => {
-    if (!carouselRef.current) return;
-    const track = carouselRef.current;
-    const card = track.querySelector(".project-card") as HTMLElement | null;
-    if (!card) return;
-    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-    const pad = Math.max(0, (track.clientWidth - card.offsetWidth) / 2 - gap);
-    const left = track.querySelector(
-      ".carousel-spacer-left",
-    ) as HTMLElement | null;
-    const right = track.querySelector(
-      ".carousel-spacer-right",
-    ) as HTMLElement | null;
-    if (left) left.style.minWidth = `${pad}px`;
-    if (right) right.style.minWidth = `${pad}px`;
-  }, []);
-
-  const updateCardScales = useCallback(() => {
-    if (!carouselRef.current) return;
-    const track = carouselRef.current;
-    const trackRect = track.getBoundingClientRect();
-    const trackCenter = trackRect.left + trackRect.width / 2;
-    const cards = track.querySelectorAll(
-      ".project-card",
-    ) as NodeListOf<HTMLElement>;
-
-    let closestIndex = 0;
-    let closestDist = Infinity;
-
-    cards.forEach((card, i) => {
-      const cardRect = card.getBoundingClientRect();
-      const cardCenter = cardRect.left + cardRect.width / 2;
-      const dist = Math.abs(cardCenter - trackCenter);
-      const maxDist = trackRect.width / 2;
-      const t = Math.min(dist / maxDist, 1);
-
-      card.style.scale = String(1.05 - t * 0.23);
-      card.style.translate = `0 0 ${-t * 100}px`;
-      card.style.opacity = String(1 - t * 0.6);
-
-      if (dist < closestDist) {
-        closestDist = dist;
-        closestIndex = i;
-      }
-    });
-
-    if (closestIndex !== focusedRef.current) {
-      focusedRef.current = closestIndex;
-      setFocusedIndex(closestIndex);
-    }
-  }, []);
-
-  const scrollToIndex = useCallback((index: number) => {
-    if (!carouselRef.current) return;
-    const track = carouselRef.current;
-    const cards = track.querySelectorAll(".project-card");
-    const card = cards[index] as HTMLElement | undefined;
-    if (!card) return;
-    const cardCenter = card.offsetLeft + card.offsetWidth / 2;
-    const scrollTarget = cardCenter - track.clientWidth / 2;
-    track.scrollTo({ left: scrollTarget, behavior: "smooth" });
-  }, []);
-
-  const updateScrollState = useCallback(() => {
-    if (!carouselRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-    setScrollState({
-      atStart: scrollLeft <= 5,
-      atEnd: scrollLeft + clientWidth >= scrollWidth - 5,
-    });
-    updateCardScales();
-
-  }, [updateCardScales]);
-
-  const selectCard = (direction: "left" | "right") => {
-    const next =
-      direction === "left"
-        ? Math.max(0, focusedIndex - 1)
-        : Math.min(projects.length - 1, focusedIndex + 1);
-    flushSync(() => setFocusedIndex(next));
-    requestAnimationFrame(() => scrollToIndex(next));
-  };
 
   useEffect(() => {
     if (visible && !hasAnimated.current) {
@@ -192,18 +112,11 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
         ease: easings.eases.outQuart,
       });
 
-      animate(".projects-carousel-container", {
+      animate(".project-poster", {
         opacity: [0, 1],
-        y: ["1rem", "0rem"],
-        delay: 900,
-        duration: 600,
-        ease: easings.eases.outQuart,
-      });
-
-      animate(".project-card", {
-        y: ["1rem", "0rem"],
-        delay: stagger(80, { start: 1000 }),
-        duration: 500,
+        y: ["1.5rem", "0rem"],
+        delay: stagger(90, { start: 1000 }),
+        duration: 650,
         ease: easings.eases.outQuart,
       });
     }
@@ -213,24 +126,8 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
     }
   }, [visible]);
 
-  // Set track padding and apply initial scales on mount + resize
-  useEffect(() => {
-    if (!visible) return;
-    updateTrackPadding();
-    scrollToIndex(0);
-    updateCardScales();
-    const onResize = () => {
-      updateTrackPadding();
-      updateCardScales();
-    };
-    window.addEventListener("resize", onResize);
-    return () => {
-      window.removeEventListener("resize", onResize);
-    };
-  }, [visible, scrollToIndex, updateCardScales, updateTrackPadding]);
-
   // Rendered even while PostContent is hidden, so the content is in the DOM
-  // for crawlers. Animations and carousel layout above still key off `visible`.
+  // for crawlers. Animations above still key off `visible`.
   return (
     <div className="projects-section">
       <div className="section-header">
@@ -241,113 +138,84 @@ export default function ProjectsSection({ visible }: IProjectsSection) {
         <div className="section-rule" />
       </div>
 
-      <div className="projects-carousel-container">
-        <button
-          className="carousel-btn carousel-btn-left"
-          onClick={() => selectCard("left")}
-          aria-label="Previous project"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+      <div className="projects-list">
+        {projects.map((project, i) => (
+          <article
+            key={project.id}
+            className="project-poster"
+            // Per-project border tint, so each card keeps a little of its own
+            // personality without four sets of rules.
+            style={{ "--poster-accent": project.accent } as CSSProperties}
           >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
+            <div className="poster-media">
+              {project.image ? (
+                <img src={project.image} alt="" draggable={false} loading="lazy" />
+              ) : (
+                <div className="poster-fill" style={{ background: project.gradient }} />
+              )}
+              <span
+                className="poster-wash"
+                style={{ background: project.gradient }}
+                aria-hidden="true"
+              />
+            </div>
 
-        <div className="carousel-track-wrapper">
-          <div
-            className={`carousel-track ${scrollState.atStart ? "at-start" : ""} ${scrollState.atEnd ? "at-end" : ""}`}
-            ref={carouselRef}
-            onScroll={updateScrollState}
-          >
-            <div className="carousel-spacer-left" />
-            {projects.map((project, i) => (
-              <a
-                key={project.id}
-                className="project-card"
-                href={project.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                draggable={false}
-                onPointerDown={(event) => {
-                  if (!event.isPrimary || event.button > 1) return;
-                  linkGesture.start(i, event.pointerId, event.clientX, event.clientY, performance.now());
-                }}
-                onClick={(event) => {
-                  if (!linkGesture.consume(i, event.detail)) event.preventDefault();
-                }}
-                onAuxClick={(event) => {
-                  if (event.button === 1 && !linkGesture.consume(i, event.detail)) event.preventDefault();
-                }}
-                onFocus={(event) => {
-                  // Pointer focus must not animate the track during a swipe.
-                  if (event.currentTarget.matches(":focus-visible")) {
-                    setFocusedIndex(i);
-                    scrollToIndex(i);
+            <h3 className="poster-title">
+              {project.title.map((line) => (
+                <span key={line}>{line}</span>
+              ))}
+            </h3>
+
+            <div className="poster-panel">
+              <p className="poster-blurb">{project.blurb}</p>
+              <div className="poster-foot">
+                <div className="poster-tags">
+                  {project.tags.map((tag) => (
+                    <span key={tag} className="poster-tag">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                {/* The button is the only hit target on the card. The play
+                    triangle leads, the arrow follows, so both read left to right. */}
+                <a
+                  className="poster-button"
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  draggable={false}
+                  aria-label={
+                    project.video
+                      ? `Watch the ${project.name} demo`
+                      : `Take a look at ${project.name}`
                   }
-                }}
-              >
-                <div
-                  className="project-card-image"
-                  style={
-                    project.image ? undefined : { background: project.gradient }
-                  }
+                  onPointerDown={(event) => {
+                    if (!event.isPrimary || event.button > 1) return;
+                    linkGesture.start(i, event.pointerId, event.clientX, event.clientY, performance.now());
+                  }}
+                  onClick={(event) => {
+                    if (!linkGesture.consume(i, event.detail)) event.preventDefault();
+                  }}
+                  onAuxClick={(event) => {
+                    if (event.button === 1 && !linkGesture.consume(i, event.detail)) event.preventDefault();
+                  }}
                 >
-                  {project.image && (
-                    <img src={project.image} alt="" draggable={false} />
+                  {project.video && (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
                   )}
-                </div>
-                <div className="project-card-info">
-                  <div className="project-name">
-                    {project.name}
-                    {project.link && (
-                      <svg
-                        className="project-link-icon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                      >
-                        {project.video ? (
-                          <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" />
-                        ) : (
-                          <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
-                        )}
-                      </svg>
-                    )}
-                  </div>
-                  <div className="project-description">
-                    {project.description}
-                  </div>
-                  <div className="project-tags">
-                    {project.tags.map((tag) => (
-                      <span key={tag} className="project-tag">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </a>
-            ))}
-            <div className="carousel-spacer-right" />
-          </div>
-        </div>
-
-        <button
-          className="carousel-btn carousel-btn-right"
-          onClick={() => selectCard("right")}
-          aria-label="Next project"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-        </button>
+                  {project.video ? "Watch the demo" : "Take a look"}
+                  {!project.video && (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                      <path d="M13.2 4.6 20.6 12l-7.4 7.4-1.5-1.4 4.9-5H3.4v-2h13.2l-4.9-5z" />
+                    </svg>
+                  )}
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   );

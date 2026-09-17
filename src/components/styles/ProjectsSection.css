@@ -38,80 +38,206 @@
   transform: scaleX(0);
 }
 
-/* Project card description */
-.project-description {
-  padding: 0 1rem 0.75rem;
-  font-family: "DM Sans", sans-serif;
-  font-size: max(14px, 0.8rem);
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.4;
-}
+/* Poster cards ----------------------------------------------------------- */
 
-/* Tech tag pills */
-.project-tags {
+.projects-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0 1rem 0.75rem;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: 0 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.project-tag {
-  padding: 0.2rem 0.5rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  font-family: "DM Sans", sans-serif;
-  font-size: max(12px, 0.65rem);
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.9);
-  white-space: nowrap;
-}
-
-/* Carousel container — hidden until fade-in animation */
-.projects-carousel-container {
-  opacity: 0;
-}
-
-/* Spacers so edge cards can scroll to center (sized by JS) */
-.carousel-spacer-left,
-.carousel-spacer-right {
-  flex-shrink: 0;
-}
-
-/* Card sizing — fits within carousel track */
-.project-card {
-  width: 290px;
-  min-width: 290px;
-  cursor: pointer;
+/* Flex column anchored to the bottom, so the title always sits directly on the
+   panel however many lines the blurb runs to. */
+.project-poster {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  aspect-ratio: 4 / 5;
+  max-height: 32rem;
+  padding: 0.7rem;
+  box-sizing: border-box;
+  /* Always on, never a hover state — a ring that appears on hover would read as
+     "press me", and the card itself does nothing. */
+  border: 1px solid var(--poster-accent, rgba(255, 255, 255, 0.2));
+  border-radius: 20px;
+  overflow: hidden;
+  isolation: isolate;
+  opacity: 0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
 }
 
-/* Full-height image background */
-.project-card-image {
+.poster-media {
   position: absolute;
   inset: 0;
+  z-index: 0;
   overflow: hidden;
 }
 
-.project-card-image img {
+.poster-media img,
+.poster-fill {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  transform: scale(1.04);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Glass info overlay at the bottom */
-.project-card-info {
+.poster-wash {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+/* Darkens the lower half so the title and panel stay readable over any still. */
+.project-poster::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(1, 20, 70, 0.08) 0%,
+    rgba(1, 20, 70, 0.5) 45%,
+    rgba(1, 20, 70, 0.92) 100%
+  );
+  pointer-events: none;
+}
+
+.poster-title {
   position: relative;
-  margin-top: auto;
-  background: rgba(0, 15, 55, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 2;
+  margin: 0 0.5rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  font-family: "DM Sans", sans-serif;
+  font-size: clamp(1.9rem, 10vw, 3.1rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
 }
 
-/* Responsive adjustments */
+/* Glass panel — same recipe as .hello-card and .social-button so the projects
+   read as part of the same site rather than a separate widget. */
+.poster-panel {
+  position: relative;
+  z-index: 2;
+  padding: 0.9rem 1rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.poster-blurb {
+  margin: 0 0 0.8rem;
+  font-family: "DM Sans", sans-serif;
+  font-size: max(13px, 0.8rem);
+  font-weight: 300;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Tags run left, button sits right. They wrap onto separate rows before the
+   button ever gets squeezed below its tap size. */
+.poster-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.poster-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.poster-tag {
+  padding: 0.22rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-family: "DM Sans", sans-serif;
+  font-size: max(11px, 0.62rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+}
+
+/* The one hit target on the card. Everything else is decoration, so this is
+   the only thing that gets a pointer cursor or a press state. */
+.poster-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  gap: 0.35rem;
+  min-height: 38px;
+  padding: 0.35rem 0.85rem;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #fff;
+  font-family: "DM Sans", sans-serif;
+  font-size: max(13px, 0.72rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #06225e;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.6, 0.64, 1),
+    box-shadow 0.35s ease,
+    background 0.3s ease;
+}
+
+.poster-button svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
+  fill: currentColor;
+  transition: transform 0.35s cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+@media (hover: hover) {
+  /* Ambient only. The card is not clickable, so it must not lift or ring the
+     way something pressable would — the still just breathes a little. */
+  .project-poster:hover .poster-media img,
+  .project-poster:hover .poster-fill {
+    transform: scale(1.09);
+  }
+
+  .poster-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.22);
+  }
+
+  .poster-button:hover svg {
+    transform: translateX(2px);
+  }
+}
+
+/* The press should feel like the button bottoming out, on touch as well. */
+.poster-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* Responsive adjustments -------------------------------------------------- */
+
 /* Type scale only, so portrait only. See the note in HankCard.css. */
 @media (orientation: portrait) {
   .projects-section .section-header {
@@ -123,42 +249,17 @@
     height: 1.5rem;
     width: 1.5rem;
   }
+
+  /* Touch sizing, so portrait only — same split as .social-button. */
+  .poster-button {
+    min-height: 44px;
+    padding: 0.45rem 1rem;
+  }
 }
 
-/* Layout: the carousel needs its buttons overlaid and its track clamped on any
-   narrow viewport, portrait or not, or it overflows. */
+/* Layout: a cramped landscape window needs the same treatment as portrait. */
 @media (orientation: portrait), (max-width: 1600px) {
-  .projects-carousel-container {
-    position: relative;
-    padding: 0 !important;
-    gap: 0 !important;
-  }
-
-  .projects-carousel-container .carousel-btn {
-    position: absolute !important;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    flex: none !important;
-  }
-
-  .projects-carousel-container .carousel-btn-left {
-    left: 0.25rem;
-  }
-
-  .projects-carousel-container .carousel-btn-right {
-    right: 0.25rem;
-  }
-
-  .projects-carousel-container .carousel-track-wrapper {
-    max-width: 100% !important;
-    width: 100%;
-  }
-
-  .project-card {
-    width: clamp(160px, calc(100vw - 8rem), 240px);
-    min-width: clamp(160px, calc(100vw - 8rem), 240px);
-    aspect-ratio: 160 / 250;
-    height: auto !important;
+  .project-poster {
+    aspect-ratio: 3 / 4;
   }
 }
