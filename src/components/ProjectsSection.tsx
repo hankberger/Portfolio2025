@@ -10,6 +10,48 @@ interface IProjectsSection {
 
 const projects = [
   {
+    id: "project-5",
+    name: "Throw to Print",
+    title: ["Throw", "to Print"],
+    description: "Throwing 3D models at real 3D printers in mixed reality",
+    blurb:
+      "Mixed reality on a Meta Quest, pointed at a shelf of real 3D printers. Pick a model out of the air, throw it at a printer, and the job starts — the handoff is the throw.",
+    tags: ["Mixed Reality", "Quest", "3D Printing"],
+    gradient: "linear-gradient(135deg, #0ea5e9, #a855f7)",
+    accent: "rgba(168, 85, 247, 0.5)",
+    image: "/questprint.webp",
+    video: true,
+    link: "https://x.com/h4nkdog/status/2099150077482692994",
+  },
+  {
+    id: "project-6",
+    name: "Melee in VR",
+    title: ["Melee", "in VR"],
+    description: "Super Smash Bros. Melee reverse engineered onto a Meta Quest 3",
+    blurb:
+      "Super Smash Bros. Melee, reverse engineered with GPT-6 Astra so it runs on a Meta Quest 3 with VR controls instead of a gamepad. Filed, with no notes, under the golden era of gaming.",
+    tags: ["Quest", "VR", "Reverse Engineering"],
+    gradient: "linear-gradient(135deg, #10b981, #3b82f6)",
+    accent: "rgba(16, 185, 129, 0.5)",
+    image: "/meleevr.webp",
+    video: true,
+    link: "https://x.com/h4nkdog/status/2097504444476735988",
+  },
+  {
+    id: "project-7",
+    name: "Projection Mapping",
+    title: ["Projection", "Mapping"],
+    description: "Projection mapping over my fiancée's paintings",
+    blurb:
+      "Projection mapping over my fiancée's paintings, with GPT-6 Astra working out the mappings. The brushwork stays put and the light moves across it — and it cut the video together too.",
+    tags: ["Projection Mapping", "Motion", "Video"],
+    gradient: "linear-gradient(135deg, #7c3aed, #ec4899)",
+    accent: "rgba(236, 72, 153, 0.5)",
+    image: "/projmapping.webp",
+    video: true,
+    link: "https://x.com/h4nkdog/status/2097047253047259519",
+  },
+  {
     id: "project-4",
     name: "Banana City",
     title: ["Banana", "City"],
